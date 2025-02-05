@@ -5,12 +5,13 @@
   <parent>
     <groupId>ai.timefold.solver</groupId>
     <artifactId>timefold-solver-quarkus-benchmark-parent</artifactId>
-    <version>0.9.39-SNAPSHOT</version>
+    <version>999-SNAPSHOT</version>
   </parent>
 
   <artifactId>timefold-solver-quarkus-benchmark-deployment</artifactId>
   <name>Timefold Solver Quarkus Benchmark - Deployment</name>
   <description>Quarkus deployment module for timefold-solver-quarkus-benchmark.</description>
+  <url>https://timefold.ai</url>
 
   <properties>
     <java.module.name>ai.timefold.solver.quarkus.benchmark.deployment</java.module.name>
@@ -73,7 +74,6 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
           <annotationProcessorPaths>
@@ -86,7 +86,6 @@
         </configuration>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
         <executions>
           <execution>

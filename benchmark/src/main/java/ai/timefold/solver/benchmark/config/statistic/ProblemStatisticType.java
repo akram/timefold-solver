@@ -11,19 +11,25 @@ import ai.timefold.solver.benchmark.impl.statistic.bestscore.BestScoreProblemSta
 import ai.timefold.solver.benchmark.impl.statistic.bestsolutionmutation.BestSolutionMutationProblemStatistic;
 import ai.timefold.solver.benchmark.impl.statistic.memoryuse.MemoryUseProblemStatistic;
 import ai.timefold.solver.benchmark.impl.statistic.movecountperstep.MoveCountPerStepProblemStatistic;
+import ai.timefold.solver.benchmark.impl.statistic.movecountpertype.MoveCountPerTypeProblemStatistic;
+import ai.timefold.solver.benchmark.impl.statistic.moveevaluationspeed.MoveEvaluationSpeedProblemStatisticTime;
 import ai.timefold.solver.benchmark.impl.statistic.scorecalculationspeed.ScoreCalculationSpeedProblemStatistic;
 import ai.timefold.solver.benchmark.impl.statistic.stepscore.StepScoreProblemStatistic;
+
+import org.jspecify.annotations.NonNull;
 
 @XmlEnum
 public enum ProblemStatisticType implements StatisticType {
     BEST_SCORE,
     STEP_SCORE,
     SCORE_CALCULATION_SPEED,
+    MOVE_EVALUATION_SPEED,
     BEST_SOLUTION_MUTATION,
     MOVE_COUNT_PER_STEP,
+    MOVE_COUNT_PER_TYPE,
     MEMORY_USE;
 
-    public ProblemStatistic buildProblemStatistic(ProblemBenchmarkResult problemBenchmarkResult) {
+    public @NonNull ProblemStatistic buildProblemStatistic(@NonNull ProblemBenchmarkResult problemBenchmarkResult) {
         switch (this) {
             case BEST_SCORE:
                 return new BestScoreProblemStatistic(problemBenchmarkResult);
@@ -31,10 +37,14 @@ public enum ProblemStatisticType implements StatisticType {
                 return new StepScoreProblemStatistic(problemBenchmarkResult);
             case SCORE_CALCULATION_SPEED:
                 return new ScoreCalculationSpeedProblemStatistic(problemBenchmarkResult);
+            case MOVE_EVALUATION_SPEED:
+                return new MoveEvaluationSpeedProblemStatisticTime(problemBenchmarkResult);
             case BEST_SOLUTION_MUTATION:
                 return new BestSolutionMutationProblemStatistic(problemBenchmarkResult);
             case MOVE_COUNT_PER_STEP:
                 return new MoveCountPerStepProblemStatistic(problemBenchmarkResult);
+            case MOVE_COUNT_PER_TYPE:
+                return new MoveCountPerTypeProblemStatistic(problemBenchmarkResult);
             case MEMORY_USE:
                 return new MemoryUseProblemStatistic(problemBenchmarkResult);
             default:
@@ -47,7 +57,7 @@ public enum ProblemStatisticType implements StatisticType {
                 || this == STEP_SCORE;
     }
 
-    public static List<ProblemStatisticType> defaultList() {
+    public static @NonNull List<@NonNull ProblemStatisticType> defaultList() {
         return List.of(ProblemStatisticType.BEST_SCORE);
     }
 

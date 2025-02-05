@@ -6,18 +6,19 @@
   <parent>
     <groupId>ai.timefold.solver</groupId>
     <artifactId>timefold-solver-persistence-parent</artifactId>
-    <version>0.9.39-SNAPSHOT</version>
+    <version>999-SNAPSHOT</version>
   </parent>
 
   <artifactId>timefold-solver-jsonb</artifactId>
 
-  <name>Timefold Solver JSON-B</name>
+  <name>(Deprecated) Timefold Solver JSON-B</name>
   <description>
     Timefold solves planning problems.
     This lightweight, embeddable planning engine implements powerful and scalable algorithms
     to optimize business resource scheduling and planning.
 
     This module contains the JSON-B integration.
+    This module is deprecated and will be removed in a future major version of Timefold Solver.
   </description>
   <url>https://timefold.ai</url>
 
@@ -29,11 +30,11 @@
     <!-- Internal dependencies -->
     <dependency>
       <groupId>ai.timefold.solver</groupId>
-      <artifactId>timefold-solver-core-impl</artifactId>
+      <artifactId>timefold-solver-core</artifactId>
     </dependency>
     <dependency>
       <groupId>ai.timefold.solver</groupId>
-      <artifactId>timefold-solver-core-impl</artifactId>
+      <artifactId>timefold-solver-core</artifactId>
       <type>test-jar</type>
       <scope>test</scope>
     </dependency>

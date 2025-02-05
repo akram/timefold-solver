@@ -1,6 +1,7 @@
 package ai.timefold.solver.benchmark.impl.loader;
 
 import java.io.File;
+import java.util.Objects;
 
 import jakarta.xml.bind.annotation.XmlTransient;
 
@@ -25,10 +26,6 @@ public class FileProblemProvider<Solution_> implements ProblemProvider<Solution_
 
     public SolutionFileIO<Solution_> getSolutionFileIO() {
         return solutionFileIO;
-    }
-
-    public File getProblemFile() {
-        return problemFile;
     }
 
     @Override
@@ -56,20 +53,20 @@ public class FileProblemProvider<Solution_> implements ProblemProvider<Solution_
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
+    public boolean equals(Object other) {
+        if (this == other) {
             return true;
-        } else if (o instanceof FileProblemProvider) {
-            FileProblemProvider other = (FileProblemProvider) o;
-            return problemFile.equals(other.problemFile);
-        } else {
+        }
+        if (other == null || getClass() != other.getClass()) {
             return false;
         }
+        FileProblemProvider<?> that = (FileProblemProvider<?>) other;
+        return Objects.equals(problemFile, that.problemFile);
     }
 
     @Override
     public int hashCode() {
-        return problemFile.hashCode();
+        return Objects.hash(problemFile);
     }
 
     @Override

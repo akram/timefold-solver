@@ -1,68 +1,121 @@
-# TODO release XSD to timefold.ai/xsd/
-# TODO reset timefold-quickstarts stable branch
-# TODO adjust website pom.yml release date and version
-# TODO update version in https://timefold.ai/product/upgrade/upgrade-timefold.gradle
-# TODO tag github issues with version
+# Axioms of the release pipeline:
+# - Each release starts from timefold-solver by running this Github Action.
+# - Each individual repository can only start its own release when its dependencies are fully released.
+#   timefold-solver-enterprise depends on timefold-solver
+#   timefold-quickstarts depends on timefold-solver
+#   timefold-website releases last
+# - Each individual repository uses 999-SNAPSHOT as its development version, even on micro branches.
+#
+# Should any of these axioms change, the release pipeline will need to be (significantly) refactored.
+# 0.8.x releases existed before this pipeline; they are done differently, similarities are coincidental.
+
 name: Release
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Release version'
+        description: 'Release version (e.g. 1.0.0)'
         required: true
-      nextVersion:
-        description: 'Next version after release (-SNAPSHOT will be added automatically)'
+      pythonVersionSuffix:
+        description: 'What suffix to append to the Python version (ex: b0 for beta release)'
+        required: true
+        default: b0
+      sourceBranch:
+        description: 'Branch to cut the release from'
+        default: main
+        required: true
+      dryRun:
+        description: 'Do a dry run? (true or false)'
+        default: true
         required: true
 jobs:
   build:
-    runs-on: ubuntu-latest
+    env:
+      MAVEN_ARGS: "--no-transfer-progress --batch-mode"
+      RELEASE_BRANCH_NAME: "__timefold_release_branch__"
+    runs-on: self-hosted
+    environment:
+      name: pypi
+      url: https://pypi.org/p/timefold
+    permissions:
+      contents: write  # IMPORTANT: required for action to create release branch
+      pull-requests: write # IMPORTANT: so release PR can be created
+      id-token: write  # IMPORTANT: mandatory for trusted publishing
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout timefold-solver
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.inputs.sourceBranch }}
 
-      - uses: actions/setup-java@v3
+      - name: Delete release branch (if exists)
+        continue-on-error: true
+        run: git push -d origin $RELEASE_BRANCH_NAME
+
+      - name: Create release branch and switch to it
+        run: |
+          git config user.name "Timefold Release Bot"
+          git config user.email "release@timefold.ai"
+          git checkout -b $RELEASE_BRANCH_NAME
+
+      - uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Set release version
-        run: mvn --no-transfer-progress --batch-mode -Dfull versions:set -DnewVersion=${{ github.event.inputs.version }}
-
-      - name: Commit and push release version
-        uses: actions-js/push@v1.4
+      # Need Maven 3.9.0+ to recognize MAVEN_ARGS.
+      - name: Set up Maven
+        uses: stCarolas/setup-maven@v5
         with:
-          github_token: ${{ secrets.JRELEASER_GITHUB_TOKEN }}
-          message: Set release version ${{ github.event.inputs.version }}
+          maven-version: 3.9.3
 
-      - name: Build stage release
-        run: mvn --no-transfer-progress --batch-mode -Dfull clean deploy -DaltDeploymentRepository=local::default::file://`pwd`/target/staging-deploy
+      - name: Python 3.12 Setup
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+
+      - name: Install Pip and build
+        run: |
+          python -m pip install --upgrade pip
+          pip install build          
+
+      # We skip tests in dry run, to make the process faster.
+      # Technically, this goes against the main reason for doing a dry run; to eliminate potential problems.
+      # But unless something catastrophic happened, PR checks on source branch already ensured that all tests pass.
+      - name: Set release version and build release
+        run: |
+          mvn -Dfull versions:set -DnewVersion=${{ github.event.inputs.version }}
+          sed -i "s/^timefold_solver_python_version.*=.*/timefold_solver_python_version = '${{ github.event.inputs.version }}${{ github.event.inputs.pythonVersionSuffix }}'/" setup.py
+          mvn -Dfull deploy -DskipTests=${{ github.event.inputs.dryRun }} -DaltDeploymentRepository=local::default::file://`pwd`/target/staging-deploy
+          python -m build
+          cp docs/target/antora-template.yml docs/src/antora.yml
+          git add docs/src/antora.yml
+          find . -name 'pom.xml' | xargs git add
+          git commit -m "build: release version ${{ github.event.inputs.version }}"
+          git push origin $RELEASE_BRANCH_NAME
 
       - name: Run JReleaser
-        run: mvn --no-transfer-progress --batch-mode -Dfull jreleaser:full-release -DaltDeploymentRepository=local::default::file://`pwd`/target/staging-deploy
+        uses: jreleaser/release-action@v2
         env:
-          #          JRELEASER_PROJECT_VERSION: ${{ github.event.inputs.version }}
+          JRELEASER_DRY_RUN: ${{ github.event.inputs.dryRun }}
+          JRELEASER_PROJECT_VERSION: ${{ github.event.inputs.version }}
           JRELEASER_GITHUB_TOKEN: ${{ secrets.JRELEASER_GITHUB_TOKEN }}
           JRELEASER_GPG_PASSPHRASE: ${{ secrets.JRELEASER_GPG_PASSPHRASE }}
           JRELEASER_GPG_PUBLIC_KEY: ${{ secrets.JRELEASER_GPG_PUBLIC_KEY }}
           JRELEASER_GPG_SECRET_KEY: ${{ secrets.JRELEASER_GPG_SECRET_KEY }}
-          JRELEASER_NEXUS2_MAVEN_CENTRAL_USERNAME: ${{ secrets.JRELEASER_NEXUS2_MAVEN_CENTRAL_USERNAME }}
-          JRELEASER_NEXUS2_MAVEN_CENTRAL_PASSWORD: ${{ secrets.JRELEASER_NEXUS2_MAVEN_CENTRAL_PASSWORD }}
-
-      - name: Set snapshot version
-        run: mvn --no-transfer-progress --batch-mode -Dfull versions:set -DnewVersion=${{ github.event.inputs.nextVersion }}-SNAPSHOT
-
-      - name: Commit and push tag and snapshot version
-        uses: actions-js/push@v1.4
-        with:
-          github_token: ${{ secrets.JRELEASER_GITHUB_TOKEN }}
-          message: Set next SNAPSHOT version ${{ github.event.inputs.nextVersion }}-SNAPSHOT
-          tags: true
+          JRELEASER_MAVENCENTRAL_USERNAME: ${{ secrets.JRELEASER_MAVEN_CENTRAL_TOKEN_USER }}
+          JRELEASER_MAVENCENTRAL_PASSWORD: ${{ secrets.JRELEASER_MAVEN_CENTRAL_TOKEN }}
 
       - name: JReleaser release output
+        uses: actions/upload-artifact@v4
         if: always()
-        uses: actions/upload-artifact@v3
         with:
           name: jreleaser-release
           path: |
             out/jreleaser/trace.log
             out/jreleaser/output.properties
+
+      - name: Publish distribution to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        if: ${{ github.event.inputs.dryRun == 'false' }}

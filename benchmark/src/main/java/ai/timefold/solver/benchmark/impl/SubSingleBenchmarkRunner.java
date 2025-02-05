@@ -14,10 +14,8 @@ import ai.timefold.solver.core.api.score.ScoreExplanation;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolutionUpdatePolicy;
 import ai.timefold.solver.core.config.solver.SolverConfig;
-import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.solver.DefaultSolver;
 import ai.timefold.solver.core.impl.solver.DefaultSolverFactory;
-import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,20 +90,23 @@ public class SubSingleBenchmarkRunner<Solution_> implements Callable<SubSingleBe
         subSingleBenchmarkTagMap.put("timefold.benchmark.run", runId);
         solverConfig = new SolverConfig(solverConfig);
         randomSeed = solverConfig.getRandomSeed();
+
         // Defensive copy of solverConfig for every SingleBenchmarkResult to reset Random, tabu lists, ...
         DefaultSolverFactory<Solution_> solverFactory = new DefaultSolverFactory<>(new SolverConfig(solverConfig));
+
+        // Register metrics
+        StatisticRegistry<Solution_> statisticRegistry =
+                new StatisticRegistry<>(solverFactory.getSolutionDescriptor().getScoreDefinition());
+        Metrics.addRegistry(statisticRegistry);
+        Tags runTag = Tags.of("timefold.benchmark.run", runId);
+        subSingleBenchmarkResult.getEffectiveSubSingleStatisticMap().forEach((statisticType, subSingleStatistic) -> {
+            subSingleStatistic.open(statisticRegistry, runTag);
+            subSingleStatistic.initPointList();
+        });
+
         DefaultSolver<Solution_> solver = (DefaultSolver<Solution_>) solverFactory.buildSolver();
         solver.setMonitorTagMap(subSingleBenchmarkTagMap);
-        StatisticRegistry<Solution_> statisticRegistry = new StatisticRegistry<>(solver);
-        Metrics.addRegistry(statisticRegistry);
         solver.addPhaseLifecycleListener(statisticRegistry);
-
-        Tags runTag = Tags.of("timefold.benchmark.run", runId);
-        for (SubSingleStatistic<Solution_, ?> subSingleStatistic : subSingleBenchmarkResult.getEffectiveSubSingleStatisticMap()
-                .values()) {
-            subSingleStatistic.open(statisticRegistry, runTag, solver);
-            subSingleStatistic.initPointList();
-        }
         Solution_ solution = solver.solve(problem);
 
         solver.removePhaseLifecycleListener(statisticRegistry);
@@ -114,22 +115,21 @@ public class SubSingleBenchmarkRunner<Solution_> implements Callable<SubSingleBe
 
         for (SubSingleStatistic<Solution_, ?> subSingleStatistic : subSingleBenchmarkResult.getEffectiveSubSingleStatisticMap()
                 .values()) {
-            subSingleStatistic.close(statisticRegistry, runTag, solver);
+            subSingleStatistic.close(statisticRegistry, runTag);
             subSingleStatistic.hibernatePointList();
         }
         if (!warmUp) {
-            SolverScope<Solution_> solverScope = solver.getSolverScope();
-            SolutionDescriptor<Solution_> solutionDescriptor = solverScope.getSolutionDescriptor();
-            problemBenchmarkResult.registerScale(solutionDescriptor.getEntityCount(solution),
-                    solutionDescriptor.getGenuineVariableCount(solution),
-                    solutionDescriptor.getMaximumValueCount(solution),
-                    solutionDescriptor.getProblemScale(solution));
+            var solverScope = solver.getSolverScope();
+            var solutionDescriptor = solverScope.getSolutionDescriptor();
+            problemBenchmarkResult.registerProblemSizeStatistics(solverScope.getProblemSizeStatistics());
             subSingleBenchmarkResult.setScore(solutionDescriptor.getScore(solution));
             subSingleBenchmarkResult.setTimeMillisSpent(timeMillisSpent);
             subSingleBenchmarkResult.setScoreCalculationCount(solverScope.getScoreCalculationCount());
+            subSingleBenchmarkResult.setMoveEvaluationCount(solverScope.getMoveEvaluationCount());
 
             SolutionManager<Solution_, ?> solutionManager = SolutionManager.create(solverFactory);
-            boolean isConstraintMatchEnabled = solver.getSolverScope().getScoreDirector().isConstraintMatchEnabled();
+            boolean isConstraintMatchEnabled = solver.getSolverScope().getScoreDirector().getConstraintMatchPolicy()
+                    .isEnabled();
             if (isConstraintMatchEnabled) { // Easy calculator fails otherwise.
                 ScoreExplanation<Solution_, ?> scoreExplanation =
                         solutionManager.explain(solution, SolutionUpdatePolicy.NO_UPDATE);

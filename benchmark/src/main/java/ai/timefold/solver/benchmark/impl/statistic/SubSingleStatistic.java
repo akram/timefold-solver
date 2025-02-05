@@ -19,7 +19,6 @@ import ai.timefold.solver.benchmark.impl.report.ReportHelper;
 import ai.timefold.solver.benchmark.impl.result.PlannerBenchmarkResult;
 import ai.timefold.solver.benchmark.impl.result.SingleBenchmarkResult;
 import ai.timefold.solver.benchmark.impl.result.SubSingleBenchmarkResult;
-import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 
 import org.slf4j.Logger;
@@ -72,6 +71,7 @@ public abstract class SubSingleStatistic<Solution_, StatisticPoint_ extends Stat
     /**
      * @return never null, the relative path from {@link PlannerBenchmarkResult#getBenchmarkReportDirectory()}.
      */
+    @SuppressWarnings("unused") // Used by FreeMarker.
     public String getRelativeCsvFilePath() {
         SingleBenchmarkResult singleBenchmarkResult = subSingleBenchmarkResult.getSingleBenchmarkResult();
         return singleBenchmarkResult.getProblemBenchmarkResult().getProblemReportDirectoryName() + "/"
@@ -92,9 +92,9 @@ public abstract class SubSingleStatistic<Solution_, StatisticPoint_ extends Stat
     // Lifecycle methods
     // ************************************************************************
 
-    public abstract void open(StatisticRegistry<Solution_> registry, Tags runTag, Solver<Solution_> solver);
+    public abstract void open(StatisticRegistry<Solution_> registry, Tags runTag);
 
-    public void close(StatisticRegistry<Solution_> registry, Tags runTag, Solver<Solution_> solver) {
+    public void close(StatisticRegistry<Solution_> registry, Tags runTag) {
         // Empty by default; SubSingleBenchmarkRunner unregisters the Registry (and thus the listeners)
     }
 
@@ -195,6 +195,7 @@ public abstract class SubSingleStatistic<Solution_, StatisticPoint_ extends Stat
     // Report accumulates
     // ************************************************************************
 
+    @SuppressWarnings("unused") // Used by FreeMarker.
     public String getAnchorId() {
         return ReportHelper.escapeHtmlId(subSingleBenchmarkResult.getName() + "_" + getStatisticType().name());
     }

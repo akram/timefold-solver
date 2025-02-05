@@ -2,12 +2,17 @@ package ai.timefold.solver.quarkus.deployment;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+
+import jakarta.inject.Named;
 
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfigurationProvider;
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintWeight;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.entity.PlanningPin;
+import ai.timefold.solver.core.api.domain.entity.PlanningPinToIndex;
 import ai.timefold.solver.core.api.domain.lookup.PlanningId;
+import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityProperty;
 import ai.timefold.solver.core.api.domain.solution.PlanningScore;
@@ -16,6 +21,7 @@ import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty
 import ai.timefold.solver.core.api.domain.solution.ProblemFactProperty;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.domain.variable.AnchorShadowVariable;
+import ai.timefold.solver.core.api.domain.variable.CascadingUpdateShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.CustomShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.IndexShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
@@ -29,11 +35,18 @@ import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 import ai.timefold.solver.core.api.score.calculator.IncrementalScoreCalculator;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
+import ai.timefold.solver.core.api.solver.SolverFactory;
+import ai.timefold.solver.core.api.solver.SolverManager;
+import ai.timefold.solver.core.config.solver.SolverConfig;
+import ai.timefold.solver.core.config.solver.SolverManagerConfig;
 
 import org.jboss.jandex.DotName;
 
 public final class DotNames {
+    // Jakarta classes
+    static final DotName NAMED = DotName.createSimple(Named.class);
 
+    // Timefold classes
     static final DotName PLANNING_SOLUTION = DotName.createSimple(PlanningSolution.class.getName());
     static final DotName PLANNING_ENTITY_COLLECTION_PROPERTY =
             DotName.createSimple(PlanningEntityCollectionProperty.class.getName());
@@ -49,9 +62,11 @@ public final class DotNames {
     static final DotName CONSTRAINT_CONFIGURATION_PROVIDER =
             DotName.createSimple(ConstraintConfigurationProvider.class.getName());
     static final DotName CONSTRAINT_WEIGHT = DotName.createSimple(ConstraintWeight.class.getName());
+    static final DotName CONSTRAINT_WEIGHT_OVERRIDES = DotName.createSimple(ConstraintWeightOverrides.class.getName());
 
     static final DotName PLANNING_ENTITY = DotName.createSimple(PlanningEntity.class.getName());
     static final DotName PLANNING_PIN = DotName.createSimple(PlanningPin.class.getName());
+    static final DotName PLANNING_PIN_TO_INDEX = DotName.createSimple(PlanningPinToIndex.class.getName());
     static final DotName PLANNING_ID = DotName.createSimple(PlanningId.class.getName());
 
     static final DotName PLANNING_VARIABLE = DotName.createSimple(PlanningVariable.class.getName());
@@ -67,6 +82,13 @@ public final class DotNames {
     static final DotName PIGGYBACK_SHADOW_VARIABLE = DotName.createSimple(PiggybackShadowVariable.class.getName());
     static final DotName PREVIOUS_ELEMENT_SHADOW_VARIABLE = DotName.createSimple(PreviousElementShadowVariable.class.getName());
     static final DotName SHADOW_VARIABLE = DotName.createSimple(ShadowVariable.class.getName());
+    static final DotName CASCADING_UPDATE_SHADOW_VARIABLE =
+            DotName.createSimple(CascadingUpdateShadowVariable.class.getName());
+
+    static final DotName SOLVER_CONFIG = DotName.createSimple(SolverConfig.class.getName());
+    static final DotName SOLVER_MANAGER_CONFIG = DotName.createSimple(SolverManagerConfig.class.getName());
+    static final DotName SOLVER_FACTORY = DotName.createSimple(SolverFactory.class.getName());
+    static final DotName SOLVER_MANAGER = DotName.createSimple(SolverManager.class.getName());
 
     // Need to use String since timefold-solver-test is not on the compile classpath
     static final DotName CONSTRAINT_VERIFIER =
@@ -74,6 +96,7 @@ public final class DotNames {
 
     static final DotName[] PLANNING_ENTITY_FIELD_ANNOTATIONS = {
             PLANNING_PIN,
+            PLANNING_PIN_TO_INDEX,
             PLANNING_VARIABLE,
             PLANNING_LIST_VARIABLE,
             ANCHOR_SHADOW_VARIABLE,
@@ -84,6 +107,7 @@ public final class DotNames {
             PIGGYBACK_SHADOW_VARIABLE,
             PREVIOUS_ELEMENT_SHADOW_VARIABLE,
             SHADOW_VARIABLE,
+            CASCADING_UPDATE_SHADOW_VARIABLE
     };
 
     static final DotName[] GIZMO_MEMBER_ACCESSOR_ANNOTATIONS = {
@@ -95,6 +119,7 @@ public final class DotNames {
             CONSTRAINT_CONFIGURATION_PROVIDER,
             CONSTRAINT_WEIGHT,
             PLANNING_PIN,
+            PLANNING_PIN_TO_INDEX,
             PLANNING_ID,
             PLANNING_VARIABLE,
             PLANNING_LIST_VARIABLE,
@@ -108,7 +133,14 @@ public final class DotNames {
             PIGGYBACK_SHADOW_VARIABLE,
             PREVIOUS_ELEMENT_SHADOW_VARIABLE,
             SHADOW_VARIABLE,
+            CASCADING_UPDATE_SHADOW_VARIABLE
     };
+
+    static final Set<DotName> SOLVER_INJECTABLE_TYPES = Set.of(
+            SOLVER_CONFIG,
+            SOLVER_MANAGER_CONFIG,
+            SOLVER_FACTORY,
+            SOLVER_MANAGER);
 
     public enum BeanDefiningAnnotations {
         PLANNING_SCORE(DotNames.PLANNING_SCORE, "scoreDefinitionClass"),

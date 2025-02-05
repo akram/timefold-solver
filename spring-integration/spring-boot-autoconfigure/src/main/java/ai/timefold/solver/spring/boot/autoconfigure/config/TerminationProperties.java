@@ -1,6 +1,10 @@
 package ai.timefold.solver.spring.boot.autoconfigure.config;
 
 import java.time.Duration;
+import java.util.Map;
+import java.util.TreeSet;
+
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 public class TerminationProperties {
 
@@ -23,6 +27,9 @@ public class TerminationProperties {
      * For example: "0hard/*soft" to terminate when any feasible score is reached.
      */
     private String bestScoreLimit;
+
+    @NestedConfigurationProperty
+    private DiminishedReturnsProperties diminishedReturns;
 
     // ************************************************************************
     // Getters/setters
@@ -50,6 +57,37 @@ public class TerminationProperties {
 
     public void setBestScoreLimit(String bestScoreLimit) {
         this.bestScoreLimit = bestScoreLimit;
+    }
+
+    public DiminishedReturnsProperties getDiminishedReturns() {
+        return diminishedReturns;
+    }
+
+    public void setDiminishedReturns(DiminishedReturnsProperties diminishedReturns) {
+        this.diminishedReturns = diminishedReturns;
+    }
+
+    public void loadProperties(Map<String, Object> properties) {
+        // Check if the keys are valid
+        var invalidKeySet = new TreeSet<>(properties.keySet());
+        invalidKeySet.removeAll(TerminationProperty.getValidPropertyNames());
+
+        if (!invalidKeySet.isEmpty()) {
+            throw new IllegalStateException("""
+                    The termination properties [%s] are not valid.
+                    Maybe try changing the property name to kebab-case.
+                    Here is the list of valid properties: %s"""
+                    .formatted(invalidKeySet, String.join(", ", TerminationProperty.getValidPropertyNames())));
+        }
+        properties.forEach(this::loadProperty);
+    }
+
+    private void loadProperty(String key, Object value) {
+        if (value == null) {
+            return;
+        }
+        var property = TerminationProperty.forPropertyName(key);
+        property.update(this, value);
     }
 
 }

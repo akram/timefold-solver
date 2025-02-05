@@ -3,24 +3,23 @@ package ai.timefold.solver.benchmark.impl.statistic;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.ObjLongConsumer;
 import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListener;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
-import ai.timefold.solver.core.impl.solver.DefaultSolver;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-import ai.timefold.solver.core.impl.util.Pair;
 
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.Meter;
@@ -31,6 +30,10 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 public class StatisticRegistry<Solution_> extends SimpleMeterRegistry
         implements PhaseLifecycleListener<Solution_> {
 
+    private static final String CONSTRAINT_PACKAGE_TAG = "constraint.package";
+    private static final String CONSTRAINT_NAME_TAG = "constraint.name";
+
+    List<Consumer<SolverScope<Solution_>>> solverMeterListenerList = new ArrayList<>();
     List<BiConsumer<Long, AbstractStepScope<Solution_>>> stepMeterListenerList = new ArrayList<>();
     List<BiConsumer<Long, AbstractStepScope<Solution_>>> bestSolutionMeterListenerList = new ArrayList<>();
     AbstractStepScope<Solution_> bestSolutionStepScope = null;
@@ -39,8 +42,8 @@ public class StatisticRegistry<Solution_> extends SimpleMeterRegistry
     ScoreDefinition<?> scoreDefinition;
     final Function<Number, Number> scoreLevelNumberConverter;
 
-    public StatisticRegistry(DefaultSolver<Solution_> solver) {
-        scoreDefinition = solver.getSolverScope().getScoreDefinition();
+    public StatisticRegistry(ScoreDefinition<?> scoreDefinition) {
+        this.scoreDefinition = scoreDefinition;
         Number zeroScoreLevel0 = scoreDefinition.getZeroScore().toLevelNumbers()[0];
         if (zeroScoreLevel0 instanceof BigDecimal) {
             scoreLevelNumberConverter = number -> BigDecimal.valueOf(number.doubleValue());
@@ -76,6 +79,10 @@ public class StatisticRegistry<Solution_> extends SimpleMeterRegistry
         }
     }
 
+    public void addListener(Consumer<SolverScope<Solution_>> listener) {
+        solverMeterListenerList.add(listener);
+    }
+
     public Set<Meter.Id> getMeterIds(SolverMetric metric, Tags runId) {
         return Search.in(this).name(name -> name.startsWith(metric.getMeterId())).tags(runId)
                 .meters().stream().map(Meter::getId)
@@ -102,24 +109,21 @@ public class StatisticRegistry<Solution_> extends SimpleMeterRegistry
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public void extractConstraintSummariesFromMeters(SolverMetric metric, Tags runId,
             Consumer<ConstraintSummary<?>> constraintMatchTotalConsumer) {
-        Set<Meter.Id> meterIds = getMeterIds(metric, runId);
-        Set<Pair<String, String>> constraintPackageNamePairs = new HashSet<>();
         // Add the constraint ids from the meter ids
-        meterIds.forEach(meterId -> constraintPackageNamePairs
-                .add(Pair.of(meterId.getTag("constraint.package"), meterId.getTag("constraint.name"))));
-        constraintPackageNamePairs.forEach(constraintPackageNamePair -> {
-            String constraintPackage = constraintPackageNamePair.getKey();
-            String constraintName = constraintPackageNamePair.getValue();
-            Tags constraintMatchTotalRunId = runId.and("constraint.package", constraintPackage)
-                    .and("constraint.name", constraintName);
-            // Get the score from the corresponding constraint package and constraint name meters
-            extractScoreFromMeters(metric, constraintMatchTotalRunId,
-                    // Get the count gauge (add constraint package and constraint name to the run tags)
-                    score -> getGaugeValue(metric.getMeterId() + ".count",
-                            constraintMatchTotalRunId,
-                            count -> constraintMatchTotalConsumer.accept(
-                                    new ConstraintSummary(constraintPackage, constraintName, score, count.intValue()))));
-        });
+        getMeterIds(metric, runId)
+                .stream()
+                .map(meterId -> ConstraintRef.of(meterId.getTag(CONSTRAINT_PACKAGE_TAG), meterId.getTag(CONSTRAINT_NAME_TAG)))
+                .distinct()
+                .forEach(constraintRef -> {
+                    var constraintMatchTotalRunId = runId.and(CONSTRAINT_PACKAGE_TAG, constraintRef.packageName())
+                            .and(CONSTRAINT_NAME_TAG, constraintRef.constraintName());
+                    // Get the score from the corresponding constraint package and constraint name meters
+                    extractScoreFromMeters(metric, constraintMatchTotalRunId,
+                            // Get the count gauge (add constraint package and constraint name to the run tags)
+                            score -> getGaugeValue(metric.getMeterId() + ".count", constraintMatchTotalRunId,
+                                    count -> constraintMatchTotalConsumer
+                                            .accept(new ConstraintSummary(constraintRef, score, count.intValue()))));
+                });
     }
 
     public void getGaugeValue(SolverMetric metric, Tags runId, Consumer<Number> gaugeConsumer) {
@@ -131,6 +135,16 @@ public class StatisticRegistry<Solution_> extends SimpleMeterRegistry
         if (gauge != null && Double.isFinite(gauge.value())) {
             gaugeConsumer.accept(gauge.value());
         }
+    }
+
+    public void extractMoveCountPerType(SolverScope<Solution_> solverScope, ObjLongConsumer<String> gaugeConsumer) {
+        solverScope.getMoveCountTypes().forEach(type -> {
+            var gauge = this.find(SolverMetric.MOVE_COUNT_PER_TYPE.getMeterId() + "." + type)
+                    .tags(solverScope.getMonitoringTags()).gauge();
+            if (gauge != null) {
+                gaugeConsumer.accept(type, (long) gauge.value());
+            }
+        });
     }
 
     @Override
@@ -183,5 +197,6 @@ public class StatisticRegistry<Solution_> extends SimpleMeterRegistry
                     .forEach(listener -> listener.accept(bestSolutionChangedTimestamp, bestSolutionStepScope));
             lastStepImprovedSolution = false;
         }
+        solverMeterListenerList.forEach(listener -> listener.accept(solverScope));
     }
 }

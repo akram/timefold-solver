@@ -1,5 +1,7 @@
 package ai.timefold.solver.benchmark.quarkus.deployment;
 
+import java.util.Optional;
+
 import ai.timefold.solver.benchmark.config.PlannerBenchmarkConfig;
 import ai.timefold.solver.benchmark.quarkus.TimefoldBenchmarkBeanProvider;
 import ai.timefold.solver.benchmark.quarkus.TimefoldBenchmarkRecorder;
@@ -34,27 +36,31 @@ class TimefoldBenchmarkProcessor {
 
     @BuildStep
     HotDeploymentWatchedFileBuildItem watchSolverBenchmarkConfigXml() {
-        String solverBenchmarkConfigXML = timefoldBenchmarkBuildTimeConfig.solverBenchmarkConfigXml
+        String solverBenchmarkConfigXML = timefoldBenchmarkBuildTimeConfig.solverBenchmarkConfigXml()
                 .orElse(TimefoldBenchmarkBuildTimeConfig.DEFAULT_SOLVER_BENCHMARK_CONFIG_URL);
         return new HotDeploymentWatchedFileBuildItem(solverBenchmarkConfigXML);
     }
 
     @BuildStep
-    @Record(ExecutionTime.STATIC_INIT)
-    void registerAdditionalBeans(BuildProducer<AdditionalBeanBuildItem> additionalBeans,
-            BuildProducer<SyntheticBeanBuildItem> syntheticBeans,
+    BenchmarkConfigBuildItem registerAdditionalBeans(BuildProducer<AdditionalBeanBuildItem> additionalBeans,
             BuildProducer<UnremovableBeanBuildItem> unremovableBeans,
-            SolverConfigBuildItem solverConfigBuildItem,
-            TimefoldBenchmarkRecorder recorder) {
-        if (solverConfigBuildItem.getSolverConfig() == null) {
+            SolverConfigBuildItem solverConfigBuildItem) {
+        // We don't support benchmarking for multiple solvers
+        if (solverConfigBuildItem.getSolverConfigMap().size() > 1) {
+            throw new ConfigurationException("""
+                    When defining multiple solvers, the benchmark feature is not enabled.
+                    Consider using separate <solverBenchmark> instances for evaluating different solver configurations.""");
+        }
+        if (solverConfigBuildItem.getGeneratedGizmoClasses() == null) {
             log.warn("Skipping Timefold Benchmark extension because the Timefold extension was skipped.");
             additionalBeans.produce(new AdditionalBeanBuildItem(UnavailableTimefoldBenchmarkBeanProvider.class));
-            return;
+            return new BenchmarkConfigBuildItem(null);
         }
         PlannerBenchmarkConfig benchmarkConfig;
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        if (timefoldBenchmarkBuildTimeConfig.solverBenchmarkConfigXml.isPresent()) {
-            String solverBenchmarkConfigXML = timefoldBenchmarkBuildTimeConfig.solverBenchmarkConfigXml.get();
+        Optional<String> benchmarkConfigFile = timefoldBenchmarkBuildTimeConfig.solverBenchmarkConfigXml();
+        if (benchmarkConfigFile.isPresent()) {
+            String solverBenchmarkConfigXML = benchmarkConfigFile.get();
             if (classLoader.getResource(solverBenchmarkConfigXML) == null) {
                 throw new ConfigurationException("Invalid quarkus.timefold.benchmark.solver-benchmark-config-xml property ("
                         + solverBenchmarkConfigXML + "): that classpath resource does not exist.");
@@ -66,11 +72,23 @@ class TimefoldBenchmarkProcessor {
         } else {
             benchmarkConfig = null;
         }
-        syntheticBeans.produce(SyntheticBeanBuildItem.configure(PlannerBenchmarkConfig.class)
-                .supplier(recorder.benchmarkConfigSupplier(benchmarkConfig))
-                .done());
         additionalBeans.produce(new AdditionalBeanBuildItem(TimefoldBenchmarkBeanProvider.class));
         unremovableBeans.produce(UnremovableBeanBuildItem.beanTypes(TimefoldBenchmarkRuntimeConfig.class));
         unremovableBeans.produce(UnremovableBeanBuildItem.beanTypes(SolverConfig.class));
+        return new BenchmarkConfigBuildItem(benchmarkConfig);
+    }
+
+    @BuildStep
+    @Record(ExecutionTime.RUNTIME_INIT)
+    void registerRuntimeBeans(TimefoldBenchmarkRecorder recorder, BuildProducer<SyntheticBeanBuildItem> syntheticBeans,
+            SolverConfigBuildItem solverConfigBuildItem, BenchmarkConfigBuildItem benchmarkConfigBuildItem,
+            TimefoldBenchmarkRuntimeConfig runtimeConfig) {
+        if (solverConfigBuildItem.getGeneratedGizmoClasses() == null) {
+            return;
+        }
+        syntheticBeans.produce(SyntheticBeanBuildItem.configure(PlannerBenchmarkConfig.class)
+                .supplier(recorder.benchmarkConfigSupplier(benchmarkConfigBuildItem.getBenchmarkConfig(), runtimeConfig))
+                .setRuntimeInit()
+                .done());
     }
 }

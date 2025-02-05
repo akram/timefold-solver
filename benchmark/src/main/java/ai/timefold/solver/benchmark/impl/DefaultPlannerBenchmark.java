@@ -29,6 +29,7 @@ import ai.timefold.solver.benchmark.impl.statistic.PureSubSingleStatistic;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,7 +79,7 @@ public class DefaultPlannerBenchmark implements PlannerBenchmark {
     // ************************************************************************
 
     @Override
-    public File benchmark() {
+    public @NonNull File benchmark() {
         benchmarkingStarted();
         warmUp();
         runSingleBenchmarks();
@@ -225,7 +226,7 @@ public class DefaultPlannerBenchmark implements PlannerBenchmark {
                 if (firstFailureSubSingleBenchmarkRunner == null) {
                     firstFailureSubSingleBenchmarkRunner = subSingleBenchmarkRunner;
                 }
-                break; // Exit the warm-up loop in case of a failure.
+                continue; // continue to the next task
             }
 
             SolverBenchmarkResult solverBenchmarkResult = subSingleBenchmarkRunner.getSubSingleBenchmarkResult()
@@ -406,7 +407,7 @@ public class DefaultPlannerBenchmark implements PlannerBenchmark {
     }
 
     @Override
-    public File benchmarkAndShowReportInBrowser() {
+    public @NonNull File benchmarkAndShowReportInBrowser() {
         File benchmarkDirectoryPath = benchmark();
         showReportInBrowser();
         return benchmarkDirectoryPath;

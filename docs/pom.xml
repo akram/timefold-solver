@@ -7,7 +7,7 @@
   <parent>
     <groupId>ai.timefold.solver</groupId>
     <artifactId>timefold-solver-build-parent</artifactId>
-    <version>0.9.39-SNAPSHOT</version>
+    <version>999-SNAPSHOT</version>
     <relativePath>../build/build-parent/pom.xml</relativePath>
   </parent>
 
@@ -56,24 +56,6 @@
         </configuration>
         <executions>
           <execution>
-            <id>generate-single-html</id>
-            <phase>generate-resources</phase>
-            <goals>
-              <goal>process-asciidoc</goal>
-            </goals>
-            <configuration>
-              <!-- Needs to be duplicated to avoid rendering each adoc separately -->
-              <sourceDocumentName>${source.document.name}</sourceDocumentName>
-              <backend>html5</backend>
-              <outputDirectory>${docs.target.dir}/html_single</outputDirectory>
-              <outputFile>index.html</outputFile>
-              <attributes>
-                <imagesdir>.</imagesdir>
-                <source-highlighter>highlightjs</source-highlighter>
-              </attributes>
-            </configuration>
-          </execution>
-          <execution>
             <id>generate-pdf</id>
             <phase>generate-resources</phase>
             <goals>
@@ -87,38 +69,42 @@
               <outputFile>timefold-solver-docs.pdf</outputFile>
               <attributes>
                 <imagesdir>${basedir}/src/modules/ROOT/images</imagesdir>
-                <source-highlighter>coderay</source-highlighter><!-- highlightjs does not work in PDF -->
+                <source-highlighter>coderay</source-highlighter>
               </attributes>
+              <logHandler>
+                <failIf>
+                  <severity>WARN</severity>
+                </failIf>
+              </logHandler>
             </configuration>
           </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <executions>
           <execution>
-            <id>package-generated-docs</id>
-            <phase>package</phase>
+            <id>generate-html</id>
+            <phase>generate-resources</phase>
             <goals>
-              <goal>single</goal>
+              <goal>process-asciidoc</goal>
             </goals>
             <configuration>
-              <finalName>${project.artifactId}-${project.version}</finalName>
-              <appendAssemblyId>false</appendAssemblyId>
-              <archiveBaseDirectory>${docs.target.dir}/</archiveBaseDirectory>
-              <descriptors>
-                <descriptor>src/main/assembly/generated-docs-zip.xml</descriptor>
-              </descriptors>
-              <archive>
-                <addMavenDescriptor>true</addMavenDescriptor>
-              </archive>
+              <!-- Needs to be duplicated to avoid rendering each adoc separately -->
+              <sourceDocumentName>${source.document.name}</sourceDocumentName>
+              <outputDirectory>${docs.target.dir}/html</outputDirectory>
+              <outputFile>timefold-solver-docs.html</outputFile>
+              <attributes>
+                <imagesdir>${basedir}/src/modules/ROOT/images</imagesdir>
+                <source-highlighter>coderay</source-highlighter>
+                <toc>left</toc>
+                <icons>font</icons>
+              </attributes>
+              <logHandler>
+                <failIf>
+                  <severity>WARN</severity>
+                </failIf>
+              </logHandler>
             </configuration>
           </execution>
         </executions>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-resources-plugin</artifactId>
         <executions>
           <!-- Substitutes properties in antora-template.yml that is copied to src/antora.yml during a release. -->

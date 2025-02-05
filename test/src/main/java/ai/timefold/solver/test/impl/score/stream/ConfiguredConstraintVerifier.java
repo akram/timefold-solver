@@ -5,14 +5,14 @@ import static java.util.Objects.requireNonNull;
 import java.util.UUID;
 import java.util.function.BiFunction;
 
-import ai.timefold.solver.constraint.streams.common.AbstractConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
-import ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamScoreDirectorFactory;
 
 /**
  * Represents a {@link ai.timefold.solver.test.api.score.stream.ConstraintVerifier} with pre-set values
@@ -31,7 +31,8 @@ final class ConfiguredConstraintVerifier<ConstraintProvider_ extends ConstraintP
     /**
      * Exists so that people can not, even by accident, pick the same constraint ID as the default cache key.
      */
-    private final String defaultScoreDirectorFactoryMapKey = UUID.randomUUID().toString();
+    private final ConstraintRef defaultScoreDirectorFactoryMapKey =
+            ConstraintRef.of(UUID.randomUUID().toString(), UUID.randomUUID().toString());
 
     private final ConstraintProvider_ constraintProvider;
     /**
@@ -42,18 +43,11 @@ final class ConfiguredConstraintVerifier<ConstraintProvider_ extends ConstraintP
     @SuppressWarnings("java:S5164") // Suppress SonarCloud warning; this is safe in the context of tests.
     private final ThreadLocal<ScoreDirectorFactoryCache<ConstraintProvider_, Solution_, Score_>> scoreDirectorFactoryContainerThreadLocal;
 
-    private final ConstraintStreamImplType constraintStreamImplType;
-
     public ConfiguredConstraintVerifier(ConstraintProvider_ constraintProvider,
-            SolutionDescriptor<Solution_> solutionDescriptor, ConstraintStreamImplType constraintStreamImplType) {
+            SolutionDescriptor<Solution_> solutionDescriptor) {
         this.constraintProvider = constraintProvider;
         this.scoreDirectorFactoryContainerThreadLocal =
-                ThreadLocal.withInitial(() -> new ScoreDirectorFactoryCache<>(this, solutionDescriptor));
-        this.constraintStreamImplType = constraintStreamImplType;
-    }
-
-    public ConstraintStreamImplType getConstraintStreamImplType() {
-        return constraintStreamImplType;
+                ThreadLocal.withInitial(() -> new ScoreDirectorFactoryCache<>(solutionDescriptor));
     }
 
     public DefaultSingleConstraintVerification<Solution_, Score_> verifyThat(

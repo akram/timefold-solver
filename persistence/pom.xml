@@ -6,7 +6,7 @@
   <parent>
     <groupId>ai.timefold.solver</groupId>
     <artifactId>timefold-solver-build-parent</artifactId>
-    <version>0.9.39-SNAPSHOT</version>
+    <version>999-SNAPSHOT</version>
     <relativePath>../build/build-parent/pom.xml</relativePath>
   </parent>
 
@@ -30,14 +30,5 @@
     <module>jpa</module>
     <module>jsonb</module>
   </modules>
-
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>animal-sniffer-maven-plugin</artifactId>
-      </plugin>
-    </plugins>
-  </build>
 
 </project>

@@ -3,17 +3,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>org.jboss</groupId>
-    <artifactId>jboss-parent</artifactId>
-    <version>39</version>
-    <relativePath/>
-  </parent>
-
   <groupId>ai.timefold.solver</groupId>
   <artifactId>timefold-solver-parent</artifactId>
   <packaging>pom</packaging>
-  <version>0.9.39-SNAPSHOT</version>
+  <version>999-SNAPSHOT</version>
 
   <name>Timefold Solver multiproject parent</name>
   <description>
@@ -34,12 +27,18 @@
   </licenses>
 
   <properties>
-    <!-- TODO: Evaluate if this override is still needed. -->
-    <!-- The property sonar.projectKey is defined in the CI in order not to collide with optawebs. It overrides
-         the default GroupId:ArtifactId to map both main branch and 7.x branches to the same SonarCloud project.
-         As the sonar.moduleKey inherits the value of sonar.projectKey by default, we have to override it too. -->
+    <version.javadoc.plugin>3.11.2</version.javadoc.plugin>
+    <version.rewrite.plugin>6.0.5</version.rewrite.plugin>
+    <version.source.plugin>3.3.1</version.source.plugin>
+    <version.resources.plugin>3.3.1</version.resources.plugin>
     <sonar.moduleKey>${project.groupId}:${project.artifactId}</sonar.moduleKey>
-    <version.rewrite.plugin>4.45.0</version.rewrite.plugin>
+    <sonar.python.version>3.10,3.11,3.12</sonar.python.version>
+    <sonar.sources>.</sonar.sources>
+    <sonar.tests>.</sonar.tests>
+    <sonar.inclusions>src/main/**</sonar.inclusions>
+    <sonar.test.inclusions>src/test/**</sonar.test.inclusions>
+    <sonar.python.coverage.reportPaths>target/coverage.xml,python/jpyinterpreter/target/coverage.xml
+    </sonar.python.coverage.reportPaths>
   </properties>
 
   <scm>
@@ -64,75 +63,57 @@
     <module>build/ide-config</module>
     <module>build/build-parent</module>
     <module>core</module>
-    <module>persistence</module>
-    <module>benchmark</module><!-- TODO move to tools/benchmark -->
     <module>test</module><!-- TODO move to core/test -->
-    <module>spring-integration</module>
-    <module>quarkus-integration</module>
-    <module>tools</module>
-    <module>migration</module><!-- TODO move to tools/migration -->
-    <module>examples</module>
+    <module>python</module>
   </modules>
 
   <build>
-    <plugins>
-      <plugin>
-        <groupId>org.jreleaser</groupId>
-        <artifactId>jreleaser-maven-plugin</artifactId>
-        <version>1.6.0</version>
-        <inherited>false</inherited>
-        <configuration>
-          <jreleaser>
-            <signing>
-              <active>ALWAYS</active>
-              <armored>true</armored>
-            </signing>
-            <deploy>
-              <maven>
-                <nexus2>
-                  <maven-central>
-                    <active>ALWAYS</active>
-                    <url>https://s01.oss.sonatype.org/service/local</url>
-                    <closeRepository>true</closeRepository>
-                    <releaseRepository>false</releaseRepository>
-                    <stagingRepositories>target/staging-deploy</stagingRepositories>
-                    <artifactOverrides>
-                      <artifactOverride>
-                        <groupId>ai.timefold.solver</groupId>
-                        <artifactId>timefold-solver-core</artifactId>
-                        <sourceJar>false</sourceJar>
-                        <javadocJar>false</javadocJar>
-                      </artifactOverride>
-                      <artifactOverride>
-                        <groupId>ai.timefold.solver</groupId>
-                        <artifactId>timefold-solver-spring-boot-starter</artifactId>
-                        <sourceJar>false</sourceJar>
-                        <javadocJar>false</javadocJar>
-                      </artifactOverride>
-                      <artifactOverride>
-                        <groupId>ai.timefold.solver</groupId>
-                        <artifactId>timefold-solver-ide-config</artifactId>
-                        <sourceJar>true</sourceJar>
-                        <javadocJar>false</javadocJar>
-                      </artifactOverride>
-                      <artifactOverride>
-                        <groupId>ai.timefold.solver</groupId>
-                        <artifactId>timefold-solver-webui</artifactId>
-                        <sourceJar>true</sourceJar>
-                        <javadocJar>false</javadocJar>
-                      </artifactOverride>
-                    </artifactOverrides>
-                  </maven-central>
-                </nexus2>
-              </maven>
-            </deploy>
-          </jreleaser>
-        </configuration>
-      </plugin>
-    </plugins>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-source-plugin</artifactId>
+          <version>${version.source.plugin}</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>${version.resources.plugin}</version>
+          <configuration>
+            <encoding>UTF-8</encoding>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>${version.javadoc.plugin}</version>
+          <configuration>
+            <author>false</author>
+            <failOnError>true</failOnError>
+            <quiet>true</quiet>
+            <legacyMode>true</legacyMode>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
   </build>
 
   <profiles>
+    <profile>
+      <id>java-tools-and-integrations</id>
+      <activation>
+        <property>
+          <name>!python</name>
+        </property>
+      </activation>
+      <modules>
+        <module>persistence</module>
+        <module>benchmark</module><!-- TODO move to tools/benchmark -->
+        <module>spring-integration</module>
+        <module>quarkus-integration</module>
+        <module>tools</module>
+        <module>migration</module><!-- TODO move to tools/migration -->
+      </modules>
+    </profile>
     <profile>
       <id>fullProfile</id>
       <activation>
@@ -142,9 +123,40 @@
       </activation>
       <modules>
         <module>docs</module>
-        <module>build/javadoc</module>
-        <module>build/distribution-internal</module>
       </modules>
+      <build>
+        <plugins>
+          <plugin>
+            <!--
+              All modules need this to be able to publish on Maven Central.
+              Can not go into build-parent, because build-parent required ide-config.
+              Therefore ide-config needs to depend on this parent and still publish sources.
+            -->
+            <artifactId>maven-source-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>jar-no-fork</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin> <!-- Make sure the build fails-fast on Javadoc issues. -->
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>build-javadoc-jar</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
     <profile>
       <!--

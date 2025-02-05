@@ -2,106 +2,120 @@ package ai.timefold.solver.quarkus.it.devui;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.IOException;
-import java.util.Objects;
+import java.util.Arrays;
+import java.util.concurrent.ExecutionException;
 
-import javax.xml.parsers.ParserConfigurationException;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+
+import ai.timefold.solver.core.api.solver.SolverJob;
+import ai.timefold.solver.core.api.solver.SolverManager;
+import ai.timefold.solver.quarkus.it.devui.domain.StringLengthVariableListener;
+import ai.timefold.solver.quarkus.it.devui.domain.TestdataStringLengthShadowEntity;
+import ai.timefold.solver.quarkus.it.devui.domain.TestdataStringLengthShadowSolution;
+import ai.timefold.solver.quarkus.it.devui.solver.TestdataStringLengthConstraintProvider;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.xml.sax.SAXException;
 
-import groovy.util.Node;
-import groovy.xml.XmlParser;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.TextNode;
+
+import io.quarkus.devui.tests.DevUIJsonRPCTest;
 import io.quarkus.test.QuarkusDevModeTest;
-import io.restassured.RestAssured;
 
-public class TimefoldDevUITest {
+public class TimefoldDevUITest extends DevUIJsonRPCTest {
 
     @RegisterExtension
     static final QuarkusDevModeTest config = new QuarkusDevModeTest()
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
-                    .addPackages(true, "ai.timefold.solver.quarkus.it.devui"));
+                    .addClasses(StringLengthVariableListener.class,
+                            TestdataStringLengthShadowEntity.class, TestdataStringLengthShadowSolution.class,
+                            TestdataStringLengthConstraintProvider.class,
+                            TimefoldTestResource.class));
 
-    // Use the Quarkus 3 context root by default as the Quarkus platform does not pass the system property.
-    static final String TIMEFOLD_DEV_UI_BASE_URL =
-            System.getProperty("dev.iu.root", "/q/dev-v1") + "/ai.timefold.solver.timefold-solver-quarkus/";
+    @Path("/timefold/test")
+    public static class TimefoldTestResource {
 
-    public static String getPage(String pageName) {
-        return TIMEFOLD_DEV_UI_BASE_URL + pageName;
+        @Inject
+        SolverManager<TestdataStringLengthShadowSolution, Long> solverManager;
+
+        @POST
+        @Path("/solver-factory")
+        @Produces(MediaType.TEXT_PLAIN)
+        public String solveWithSolverFactory() {
+            TestdataStringLengthShadowSolution planningProblem = new TestdataStringLengthShadowSolution();
+            planningProblem.setEntityList(Arrays.asList(
+                    new TestdataStringLengthShadowEntity(),
+                    new TestdataStringLengthShadowEntity()));
+            planningProblem.setValueList(Arrays.asList("a", "bb", "ccc"));
+            SolverJob<TestdataStringLengthShadowSolution, Long> solverJob = solverManager.solve(1L, planningProblem);
+            try {
+                return solverJob.getFinalBestSolution().getScore().toString();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IllegalStateException("Solving was interrupted.", e);
+            } catch (ExecutionException e) {
+                throw new IllegalStateException("Solving failed.", e);
+            }
+        }
+    }
+
+    public TimefoldDevUITest() {
+        super("Timefold Solver");
     }
 
     @Test
-    void testSolverConfigPage() throws ParserConfigurationException, SAXException, IOException {
-        String body = RestAssured.get(getPage("solverConfig"))
-                .then()
-                .extract()
-                .body()
-                .asPrettyString();
-        XmlParser xmlParser = new XmlParser();
-        Node node = xmlParser.parseText(body);
-        String solverConfig = Objects.requireNonNull(findById("timefold-solver-config", node)).text();
+    void testSolverConfigPage() throws Exception {
+        JsonNode configResponse = super.executeJsonRPCMethod("getConfig");
+        String solverConfig = configResponse.get("config").get("default").asText();
         assertThat(solverConfig).isEqualToIgnoringWhitespace(
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                         + "<!--Properties that can be set at runtime are not included-->\n"
                         + "<solver>\n"
-                        + "  <solutionClass>ai.timefold.solver.quarkus.it.devui.domain.TestdataStringLengthShadowSolution</solutionClass>\n"
-                        + "  <entityClass>ai.timefold.solver.quarkus.it.devui.domain.TestdataStringLengthShadowEntity</entityClass>\n"
+                        + "  <solutionClass>" + TestdataStringLengthShadowSolution.class.getCanonicalName()
+                        + "</solutionClass>\n"
+                        + "  <entityClass>" + TestdataStringLengthShadowEntity.class.getCanonicalName() + "</entityClass>\n"
                         + "  <domainAccessType>GIZMO</domainAccessType>\n"
                         + "  <scoreDirectorFactory>\n"
-                        + "    <constraintProviderClass>ai.timefold.solver.quarkus.it.devui.solver.TestdataStringLengthConstraintProvider</constraintProviderClass>\n"
+                        + "    <constraintProviderClass>" + TestdataStringLengthConstraintProvider.class.getCanonicalName()
+                        + "</constraintProviderClass>\n"
                         + "  </scoreDirectorFactory>\n"
+                        + "  <termination>\n"
+                        + "    <bestScoreLimit>0hard/5soft</bestScoreLimit>\n"
+                        + "  </termination>\n"
                         + "</solver>");
     }
 
     @Test
-    void testModelPage() throws ParserConfigurationException, SAXException, IOException {
-        String body = RestAssured.get(getPage("model"))
-                .then()
-                .extract()
-                .body()
-                .asPrettyString();
-        XmlParser xmlParser = new XmlParser();
-        Node node = xmlParser.parseText(body);
-        String model = Objects.requireNonNull(findById("timefold-solver-model", node)).toString();
-        assertThat(model)
-                .contains("value=[Solution: ai.timefold.solver.quarkus.it.devui.domain.TestdataStringLengthShadowSolution]");
-        assertThat(model)
-                .contains("value=[Entity: ai.timefold.solver.quarkus.it.devui.domain.TestdataStringLengthShadowEntity]");
-        assertThat(model).contains(
-                "value=[Genuine Variables]]]]]], tbody[attributes={}; value=[tr[attributes={}; value=[td[attributes={colspan=1, rowspan=1}; value=[value]]");
-        assertThat(model).contains(
-                "value=[Shadow Variables]]]]]], tbody[attributes={}; value=[tr[attributes={}; value=[td[attributes={colspan=1, rowspan=1}; value=[length]]");
+    void testModelPage() throws Exception {
+        JsonNode modelResponse = super.executeJsonRPCMethod("getModelInfo");
+        assertThat(modelResponse.get("default").get("solutionClass").asText())
+                .contains(TestdataStringLengthShadowSolution.class.getCanonicalName());
+        assertThat(modelResponse.get("default").get("entityClassList"))
+                .containsExactly(
+                        new TextNode(TestdataStringLengthShadowEntity.class.getCanonicalName()));
+        assertThat(modelResponse.get("default").get("entityClassToGenuineVariableListMap")).hasSize(1);
+        assertThat(modelResponse.get("default").get("entityClassToGenuineVariableListMap")
+                .get(TestdataStringLengthShadowEntity.class.getCanonicalName()))
+                .containsExactly(new TextNode("value"));
+        assertThat(modelResponse.get("default").get("entityClassToShadowVariableListMap")).hasSize(1);
+        assertThat(modelResponse.get("default").get("entityClassToShadowVariableListMap")
+                .get(TestdataStringLengthShadowEntity.class.getCanonicalName()))
+                .containsExactly(new TextNode("length"));
     }
 
     @Test
-    void testConstraintsPage() throws ParserConfigurationException, SAXException, IOException {
-        String body = RestAssured.get(getPage("constraints"))
-                .then()
-                .extract()
-                .body()
-                .asPrettyString();
-        XmlParser xmlParser = new XmlParser();
-        Node node = xmlParser.parseText(body);
-        String constraints = Objects.requireNonNull(findById("timefold-solver-constraints", node)).text();
-        assertThat(constraints).contains("ai.timefold.solver.quarkus.it.devui.domain/Don't assign 2 entities the same value");
-        assertThat(constraints).contains("ai.timefold.solver.quarkus.it.devui.domain/Maximize value length");
-    }
-
-    private Node findById(String id, Node node) {
-        if (id.equals(node.attribute("id"))) {
-            return node;
-        }
-        for (Object child : node.children()) {
-            if (child instanceof Node) {
-                Node maybeFoundNodeText = findById(id, (Node) child);
-                if (maybeFoundNodeText != null) {
-                    return maybeFoundNodeText;
-                }
-            }
-        }
-        return null;
+    void testConstraintsPage() throws Exception {
+        JsonNode constraintsResponse = super.executeJsonRPCMethod("getConstraints");
+        assertThat(constraintsResponse.get("default")).containsExactly(
+                new TextNode(TestdataStringLengthShadowSolution.class.getPackage()
+                        .getName() + "/Don't assign 2 entities the same value."),
+                new TextNode(TestdataStringLengthShadowSolution.class.getPackage().getName() + "/Maximize value length"));
     }
 }

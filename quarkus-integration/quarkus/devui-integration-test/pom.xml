@@ -6,19 +6,18 @@
   <parent>
     <groupId>ai.timefold.solver</groupId>
     <artifactId>timefold-solver-quarkus-parent</artifactId>
-    <version>0.9.39-SNAPSHOT</version>
+    <version>999-SNAPSHOT</version>
   </parent>
 
   <artifactId>timefold-solver-quarkus-devui-integration-test</artifactId>
   <name>Timefold Solver Quarkus - Dev UI Integration tests</name>
   <description>Quarkus Dev UI integration tests for Timefold</description>
+  <url>https://timefold.ai</url>
 
   <properties>
     <java.module.name>ai.timefold.solver.quarkus</java.module.name>
     <!-- Code of integration tests should not be a part of test coverage reports. -->
     <sonar.coverage.exclusions>**/*</sonar.coverage.exclusions>
-    <!-- Quarkus 2 and 3 use different context roots. -->
-    <dev.ui.root>/q/dev-v1</dev.ui.root>
   </properties>
 
   <dependencies>
@@ -46,8 +45,8 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>io.rest-assured</groupId>
-      <artifactId>rest-assured</artifactId>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-vertx-http-dev-ui-tests</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -71,16 +70,9 @@
         </executions>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <configuration>
-          <systemProperties>
-            <dev.iu.root>${dev.ui.root}</dev.iu.root>
-          </systemProperties>
-        </configuration>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
         <executions>
           <execution>
@@ -131,7 +123,7 @@
         </plugins>
       </build>
       <properties>
-        <quarkus.package.type>native</quarkus.package.type>
+        <quarkus.native.enabled>true</quarkus.native.enabled>
       </properties>
     </profile>
   </profiles>

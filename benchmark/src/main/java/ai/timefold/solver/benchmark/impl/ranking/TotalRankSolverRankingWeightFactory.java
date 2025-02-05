@@ -52,13 +52,17 @@ public class TotalRankSolverRankingWeightFactory implements SolverRankingWeightF
 
     public static class TotalRankSolverRankingWeight implements Comparable<TotalRankSolverRankingWeight> {
 
-        private final Comparator<SolverBenchmarkResult> totalScoreSolverRankingComparator =
-                new TotalScoreSolverRankingComparator();
+        private final Comparator<TotalRankSolverRankingWeight> totalRankSolverRankingWeightFactoryComparator =
+                Comparator.comparingInt(TotalRankSolverRankingWeight::getBetterCount)
+                        .thenComparingInt(TotalRankSolverRankingWeight::getEqualCount)
+                        .thenComparingInt(TotalRankSolverRankingWeight::getLowerCount)
+                        .thenComparing(TotalRankSolverRankingWeight::getSolverBenchmarkResult,
+                                new TotalScoreSolverRankingComparator()); // Tie-breaker
 
-        private SolverBenchmarkResult solverBenchmarkResult;
-        private int betterCount;
-        private int equalCount;
-        private int lowerCount;
+        private final SolverBenchmarkResult solverBenchmarkResult;
+        private final int betterCount;
+        private final int equalCount;
+        private final int lowerCount;
 
         public SolverBenchmarkResult getSolverBenchmarkResult() {
             return solverBenchmarkResult;
@@ -86,31 +90,25 @@ public class TotalRankSolverRankingWeightFactory implements SolverRankingWeightF
 
         @Override
         public int compareTo(TotalRankSolverRankingWeight other) {
-            return Comparator
-                    .comparingInt(TotalRankSolverRankingWeight::getBetterCount)
-                    .thenComparingInt(TotalRankSolverRankingWeight::getEqualCount)
-                    .thenComparingInt(TotalRankSolverRankingWeight::getLowerCount)
-                    .thenComparing(TotalRankSolverRankingWeight::getSolverBenchmarkResult, totalScoreSolverRankingComparator) // Tie-breaker
-                    .compare(this, other);
+            return totalRankSolverRankingWeightFactoryComparator.compare(this, other);
         }
 
         @Override
         public boolean equals(Object o) {
             if (this == o) {
                 return true;
-            } else if (o instanceof TotalRankSolverRankingWeight) {
-                TotalRankSolverRankingWeight other = (TotalRankSolverRankingWeight) o;
-                return this.compareTo(other) == 0;
-            } else {
+            }
+            if (o == null || getClass() != o.getClass()) {
                 return false;
             }
+            TotalRankSolverRankingWeight that = (TotalRankSolverRankingWeight) o;
+            return this.compareTo(that) == 0;
         }
 
         @Override
         public int hashCode() {
             return Objects.hash(betterCount, equalCount, lowerCount);
         }
-
     }
 
 }
