@@ -7,7 +7,6 @@ import ai.timefold.solver.benchmark.impl.result.SubSingleBenchmarkResult;
 import ai.timefold.solver.benchmark.impl.statistic.ProblemBasedSubSingleStatistic;
 import ai.timefold.solver.benchmark.impl.statistic.StatisticPoint;
 import ai.timefold.solver.benchmark.impl.statistic.StatisticRegistry;
-import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 
@@ -16,7 +15,7 @@ import io.micrometer.core.instrument.Tags;
 public class BestSolutionMutationSubSingleStatistic<Solution_>
         extends ProblemBasedSubSingleStatistic<Solution_, BestSolutionMutationStatisticPoint> {
 
-    BestSolutionMutationSubSingleStatistic() {
+    private BestSolutionMutationSubSingleStatistic() {
         // For JAXB.
     }
 
@@ -29,7 +28,7 @@ public class BestSolutionMutationSubSingleStatistic<Solution_>
     // ************************************************************************
 
     @Override
-    public void open(StatisticRegistry<Solution_> registry, Tags runTag, Solver<Solution_> solver) {
+    public void open(StatisticRegistry<Solution_> registry, Tags runTag) {
         registry.addListener(SolverMetric.BEST_SOLUTION_MUTATION,
                 timestamp -> registry.getGaugeValue(SolverMetric.BEST_SOLUTION_MUTATION, runTag,
                         mutationCount -> pointList

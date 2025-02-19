@@ -8,9 +8,11 @@ import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.score.stream.Joiners;
 
+import org.jspecify.annotations.NonNull;
+
 public final class TestdataConstraintVerifierConstraintProvider implements ConstraintProvider {
     @Override
-    public Constraint[] defineConstraints(ConstraintFactory constraintFactory) {
+    public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory constraintFactory) {
         return new Constraint[] {
                 penalizeEveryEntity(constraintFactory),
                 rewardEveryEntity(constraintFactory),
@@ -44,5 +46,4 @@ public final class TestdataConstraintVerifierConstraintProvider implements Const
                 .penalize(HardSoftScore.ofSoft(3))
                 .asConstraint("Different String Entity Have Different Values");
     }
-
 }

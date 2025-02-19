@@ -26,6 +26,7 @@ import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
 
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -44,7 +45,7 @@ class PlannerBenchmarkFactoryTest {
     }
 
     // ************************************************************************
-    // Static creation methods: SolverConfig
+    // Static creation methods: SolverConfig XML
     // ************************************************************************
 
     @Test
@@ -268,6 +269,25 @@ class PlannerBenchmarkFactoryTest {
     }
 
     // ************************************************************************
+    // Static creation methods: PlannerBenchmarkConfig and SolverConfig
+    // ************************************************************************
+
+    @Test
+    void createFromSolverConfig() {
+        SolverConfig solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+
+        TestdataSolution solution = new TestdataSolution("s1");
+        solution.setEntityList(Arrays.asList(new TestdataEntity("e1"), new TestdataEntity("e2"), new TestdataEntity("e3")));
+        solution.setValueList(Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2")));
+
+        PlannerBenchmarkFactory benchmarkFactory = PlannerBenchmarkFactory.createFromSolverConfig(solverConfig);
+        assertThat(benchmarkFactory.buildPlannerBenchmark(solution)).isNotNull();
+
+        benchmarkFactory = PlannerBenchmarkFactory.createFromSolverConfig(solverConfig, benchmarkOutputTestDir);
+        assertThat(benchmarkFactory.buildPlannerBenchmark(solution)).isNotNull();
+    }
+
+    // ************************************************************************
     // Instance methods
     // ************************************************************************
 
@@ -302,7 +322,7 @@ class PlannerBenchmarkFactoryTest {
 
     public static class TestdataConstraintProvider implements ConstraintProvider {
         @Override
-        public Constraint[] defineConstraints(ConstraintFactory constraintFactory) {
+        public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory constraintFactory) {
             return new Constraint[0];
         }
     }

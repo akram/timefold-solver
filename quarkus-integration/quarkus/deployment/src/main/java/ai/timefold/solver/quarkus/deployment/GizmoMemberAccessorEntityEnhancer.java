@@ -36,6 +36,7 @@ import ai.timefold.solver.core.impl.domain.common.accessor.gizmo.GizmoMemberAcce
 import ai.timefold.solver.core.impl.domain.common.accessor.gizmo.GizmoMemberDescriptor;
 import ai.timefold.solver.core.impl.domain.common.accessor.gizmo.GizmoMemberInfo;
 import ai.timefold.solver.core.impl.domain.solution.cloner.gizmo.GizmoCloningUtils;
+import ai.timefold.solver.core.impl.domain.solution.cloner.gizmo.GizmoSolutionCloner;
 import ai.timefold.solver.core.impl.domain.solution.cloner.gizmo.GizmoSolutionClonerFactory;
 import ai.timefold.solver.core.impl.domain.solution.cloner.gizmo.GizmoSolutionClonerImplementor;
 import ai.timefold.solver.core.impl.domain.solution.cloner.gizmo.GizmoSolutionOrEntityDescriptor;
@@ -103,7 +104,7 @@ final class GizmoMemberAccessorEntityEnhancer {
                 Thread.currentThread().getContextClassLoader());
         Field fieldMember = declaringClass.getDeclaredField(fieldInfo.name());
         GizmoMemberDescriptor member = createMemberDescriptorForField(fieldMember, transformers);
-        GizmoMemberInfo memberInfo = new GizmoMemberInfo(member,
+        GizmoMemberInfo memberInfo = new GizmoMemberInfo(member, true,
                 (Class<? extends Annotation>) Class.forName(annotationInstance.name().toString(), false,
                         Thread.currentThread().getContextClassLoader()));
         String generatedClassName = GizmoMemberAccessorFactory.getGeneratedClassName(fieldMember);
@@ -162,7 +163,8 @@ final class GizmoMemberAccessorEntityEnhancer {
      * @param transformers BuildProducer of BytecodeTransformers
      */
     public String generateMethodAccessor(AnnotationInstance annotationInstance, ClassOutput classOutput,
-            ClassInfo classInfo, MethodInfo methodInfo, BuildProducer<BytecodeTransformerBuildItem> transformers)
+            ClassInfo classInfo, MethodInfo methodInfo, boolean requiredReturnType,
+            BuildProducer<BytecodeTransformerBuildItem> transformers)
             throws ClassNotFoundException, NoSuchMethodException {
         Class<?> declaringClass = Class.forName(methodInfo.declaringClass().name().toString(), false,
                 Thread.currentThread().getContextClassLoader());
@@ -184,9 +186,12 @@ final class GizmoMemberAccessorEntityEnhancer {
             member = new GizmoMemberDescriptor(name, newMethodDescriptor, memberDescriptor, declaringClass,
                     setterDescriptor.orElse(null));
         }
-        GizmoMemberInfo memberInfo = new GizmoMemberInfo(member,
-                (Class<? extends Annotation>) Class.forName(annotationInstance.name().toString(), false,
-                        Thread.currentThread().getContextClassLoader()));
+        Class<? extends Annotation> annotationClass = null;
+        if (requiredReturnType || annotationInstance != null) {
+            annotationClass = (Class<? extends Annotation>) Class.forName(annotationInstance.name().toString(), false,
+                    Thread.currentThread().getContextClassLoader());
+        }
+        GizmoMemberInfo memberInfo = new GizmoMemberInfo(member, requiredReturnType, annotationClass);
         GizmoMemberAccessorImplementor.defineAccessorFor(generatedClassName, classOutput, memberInfo);
         return generatedClassName;
     }
@@ -211,7 +216,7 @@ final class GizmoMemberAccessorEntityEnhancer {
         try (ClassCreator classCreator = ClassCreator
                 .builder()
                 .className(generatedClassName)
-                .interfaces(SolutionCloner.class)
+                .interfaces(GizmoSolutionCloner.class)
                 .classOutput(classOutput)
                 .setFinal(true)
                 .build()) {
@@ -286,7 +291,9 @@ final class GizmoMemberAccessorEntityEnhancer {
                 }
             }
 
-            GizmoSolutionClonerImplementor.defineClonerFor(classCreator, solutionDescriptor, solutionSubclassSet,
+            GizmoSolutionClonerImplementor.defineClonerFor(QuarkusGizmoSolutionClonerImplementor::new,
+                    classCreator,
+                    solutionDescriptor, solutionSubclassSet,
                     memoizedGizmoSolutionOrEntityDescriptorForClassMap, deepClonedClassSet);
         }
 

@@ -2,16 +2,21 @@ package ai.timefold.solver.migration.v8;
 
 import static org.openrewrite.java.Assertions.java;
 
+import ai.timefold.solver.migration.AbstractRecipe;
+
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+@Execution(ExecutionMode.CONCURRENT)
 class ScoreManagerMethodsRecipeTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new ScoreManagerMethodsRecipe())
-                .parser(ScoreManagerMethodsRecipe.buildJavaParser());
+                .parser(AbstractRecipe.JAVA_PARSER);
     }
 
     @Test

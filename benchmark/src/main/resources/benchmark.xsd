@@ -223,10 +223,16 @@
       <xs:enumeration value="SCORE_CALCULATION_SPEED"/>
                   
       
+      <xs:enumeration value="MOVE_EVALUATION_SPEED"/>
+                  
+      
       <xs:enumeration value="BEST_SOLUTION_MUTATION"/>
                   
       
       <xs:enumeration value="MOVE_COUNT_PER_STEP"/>
+                  
+      
+      <xs:enumeration value="MOVE_COUNT_PER_TYPE"/>
                   
       
       <xs:enumeration value="MEMORY_USE"/>
@@ -311,6 +317,9 @@
         <xs:sequence>
                               
           
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="enablePreviewFeature" type="tns:previewFeature"/>
+                              
+          
           <xs:element minOccurs="0" name="environmentMode" type="tns:environmentMode"/>
                               
           
@@ -351,6 +360,9 @@
                               
           
           <xs:element minOccurs="0" name="termination" type="tns:terminationConfig"/>
+                              
+          
+          <xs:element minOccurs="0" name="nearbyDistanceMeterClass" type="xs:string"/>
                               
           
           <xs:choice maxOccurs="unbounded" minOccurs="0">
@@ -443,6 +455,9 @@
           <xs:element minOccurs="0" name="constraintStreamImplType" type="tns:constraintStreamImplType"/>
                               
           
+          <xs:element minOccurs="0" name="constraintStreamAutomaticNodeSharing" type="xs:boolean"/>
+                              
+          
           <xs:element minOccurs="0" name="incrementalScoreCalculatorClass" type="xs:string"/>
                               
           
@@ -518,6 +533,9 @@
           <xs:element minOccurs="0" name="terminationCompositionStyle" type="tns:terminationCompositionStyle"/>
                               
           
+          <xs:element minOccurs="0" name="diminishedReturns" type="tns:diminishedReturnsTerminationConfig"/>
+                              
+          
           <xs:element minOccurs="0" name="spentLimit" type="xs:string"/>
                               
           
@@ -572,7 +590,55 @@
           <xs:element minOccurs="0" name="scoreCalculationCountLimit" type="xs:long"/>
                               
           
+          <xs:element minOccurs="0" name="moveCountLimit" type="xs:long"/>
+                              
+          
           <xs:element maxOccurs="unbounded" minOccurs="0" name="termination" type="tns:terminationConfig"/>
+                            
+        
+        </xs:sequence>
+                      
+      
+      </xs:extension>
+                
+    
+    </xs:complexContent>
+          
+  
+  </xs:complexType>
+      
+  
+  <xs:complexType name="diminishedReturnsTerminationConfig">
+            
+    
+    <xs:complexContent>
+                  
+      
+      <xs:extension base="tns:abstractConfig">
+                        
+        
+        <xs:sequence>
+                              
+          
+          <xs:element minOccurs="0" name="slidingWindowDuration" type="xs:string"/>
+                              
+          
+          <xs:element minOccurs="0" name="slidingWindowMilliseconds" type="xs:long"/>
+                              
+          
+          <xs:element minOccurs="0" name="slidingWindowSeconds" type="xs:long"/>
+                              
+          
+          <xs:element minOccurs="0" name="slidingWindowMinutes" type="xs:long"/>
+                              
+          
+          <xs:element minOccurs="0" name="slidingWindowHours" type="xs:long"/>
+                              
+          
+          <xs:element minOccurs="0" name="slidingWindowDays" type="xs:long"/>
+                              
+          
+          <xs:element minOccurs="0" name="minimumImprovementRatio" type="xs:double"/>
                             
         
         </xs:sequence>
@@ -1094,6 +1160,12 @@
             <xs:element name="pillarSwapMoveSelector" type="tns:pillarSwapMoveSelectorConfig"/>
                                     
             
+            <xs:element name="ruinRecreateMoveSelector" type="tns:ruinRecreateMoveSelectorConfig"/>
+                                    
+            
+            <xs:element name="listRuinRecreateMoveSelector" type="tns:listRuinRecreateMoveSelectorConfig"/>
+                                    
+            
             <xs:element name="subChainChangeMoveSelector" type="tns:subChainChangeMoveSelectorConfig"/>
                                     
             
@@ -1547,6 +1619,78 @@
   </xs:complexType>
       
   
+  <xs:complexType name="ruinRecreateMoveSelectorConfig">
+            
+    
+    <xs:complexContent>
+                  
+      
+      <xs:extension base="tns:moveSelectorConfig">
+                        
+        
+        <xs:sequence>
+                              
+          
+          <xs:element minOccurs="0" name="minimumRuinedCount" type="xs:int"/>
+                              
+          
+          <xs:element minOccurs="0" name="maximumRuinedCount" type="xs:int"/>
+                              
+          
+          <xs:element minOccurs="0" name="minimumRuinedPercentage" type="xs:double"/>
+                              
+          
+          <xs:element minOccurs="0" name="maximumRuinedPercentage" type="xs:double"/>
+                            
+        
+        </xs:sequence>
+                      
+      
+      </xs:extension>
+                
+    
+    </xs:complexContent>
+          
+  
+  </xs:complexType>
+      
+  
+  <xs:complexType name="listRuinRecreateMoveSelectorConfig">
+            
+    
+    <xs:complexContent>
+                  
+      
+      <xs:extension base="tns:moveSelectorConfig">
+                        
+        
+        <xs:sequence>
+                              
+          
+          <xs:element minOccurs="0" name="minimumRuinedCount" type="xs:int"/>
+                              
+          
+          <xs:element minOccurs="0" name="maximumRuinedCount" type="xs:int"/>
+                              
+          
+          <xs:element minOccurs="0" name="minimumRuinedPercentage" type="xs:double"/>
+                              
+          
+          <xs:element minOccurs="0" name="maximumRuinedPercentage" type="xs:double"/>
+                            
+        
+        </xs:sequence>
+                      
+      
+      </xs:extension>
+                
+    
+    </xs:complexContent>
+          
+  
+  </xs:complexType>
+      
+  
   <xs:complexType name="subChainChangeMoveSelectorConfig">
             
     
@@ -1851,6 +1995,12 @@
                                     
             
             <xs:element name="pillarSwapMoveSelector" type="tns:pillarSwapMoveSelectorConfig"/>
+                                    
+            
+            <xs:element name="ruinRecreateMoveSelector" type="tns:ruinRecreateMoveSelectorConfig"/>
+                                    
+            
+            <xs:element name="listRuinRecreateMoveSelector" type="tns:listRuinRecreateMoveSelectorConfig"/>
                                     
             
             <xs:element name="subChainChangeMoveSelector" type="tns:subChainChangeMoveSelectorConfig"/>
@@ -2201,6 +2351,12 @@
             <xs:element name="pillarSwapMoveSelector" type="tns:pillarSwapMoveSelectorConfig"/>
                                     
             
+            <xs:element name="ruinRecreateMoveSelector" type="tns:ruinRecreateMoveSelectorConfig"/>
+                                    
+            
+            <xs:element name="listRuinRecreateMoveSelector" type="tns:listRuinRecreateMoveSelectorConfig"/>
+                                    
+            
             <xs:element name="subChainChangeMoveSelector" type="tns:subChainChangeMoveSelectorConfig"/>
                                     
             
@@ -2438,10 +2594,31 @@
   </xs:complexType>
       
   
+  <xs:simpleType name="previewFeature">
+            
+    
+    <xs:restriction base="xs:string">
+                  
+      
+      <xs:enumeration value="DIVERSIFIED_LATE_ACCEPTANCE"/>
+                  
+      
+      <xs:enumeration value="PLANNING_SOLUTION_DIFF"/>
+                
+    
+    </xs:restriction>
+          
+  
+  </xs:simpleType>
+      
+  
   <xs:simpleType name="environmentMode">
             
     
     <xs:restriction base="xs:string">
+                  
+      
+      <xs:enumeration value="TRACKED_FULL_ASSERT"/>
                   
       
       <xs:enumeration value="FULL_ASSERT"/>
@@ -2513,19 +2690,37 @@
       <xs:enumeration value="ERROR_COUNT"/>
                   
       
+      <xs:enumeration value="SCORE_CALCULATION_COUNT"/>
+                  
+      
+      <xs:enumeration value="MOVE_EVALUATION_COUNT"/>
+                  
+      
+      <xs:enumeration value="PROBLEM_ENTITY_COUNT"/>
+                  
+      
+      <xs:enumeration value="PROBLEM_VARIABLE_COUNT"/>
+                  
+      
+      <xs:enumeration value="PROBLEM_VALUE_COUNT"/>
+                  
+      
+      <xs:enumeration value="PROBLEM_SIZE_LOG"/>
+                  
+      
       <xs:enumeration value="BEST_SCORE"/>
                   
       
       <xs:enumeration value="STEP_SCORE"/>
                   
       
-      <xs:enumeration value="SCORE_CALCULATION_COUNT"/>
-                  
-      
       <xs:enumeration value="BEST_SOLUTION_MUTATION"/>
                   
       
       <xs:enumeration value="MOVE_COUNT_PER_STEP"/>
+                  
+      
+      <xs:enumeration value="MOVE_COUNT_PER_TYPE"/>
                   
       
       <xs:enumeration value="MEMORY_USE"/>
@@ -2897,6 +3092,9 @@
       <xs:enumeration value="LATE_ACCEPTANCE"/>
                   
       
+      <xs:enumeration value="DIVERSIFIED_LATE_ACCEPTANCE"/>
+                  
+      
       <xs:enumeration value="GREAT_DELUGE"/>
                   
       
@@ -2934,6 +3132,9 @@
                   
       
       <xs:enumeration value="LATE_ACCEPTANCE"/>
+                  
+      
+      <xs:enumeration value="DIVERSIFIED_LATE_ACCEPTANCE"/>
                   
       
       <xs:enumeration value="GREAT_DELUGE"/>

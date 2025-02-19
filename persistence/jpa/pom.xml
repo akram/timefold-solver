@@ -6,7 +6,7 @@
   <parent>
     <groupId>ai.timefold.solver</groupId>
     <artifactId>timefold-solver-persistence-parent</artifactId>
-    <version>0.9.39-SNAPSHOT</version>
+    <version>999-SNAPSHOT</version>
   </parent>
 
   <artifactId>timefold-solver-jpa</artifactId>
@@ -23,13 +23,14 @@
 
   <properties>
     <java.module.name>ai.timefold.solver.jpa</java.module.name>
+    <enforcer.failOnDuplicatedClasses>false</enforcer.failOnDuplicatedClasses> <!-- Quarkus. -->
   </properties>
 
   <dependencies>
     <!-- Internal dependencies -->
     <dependency>
       <groupId>ai.timefold.solver</groupId>
-      <artifactId>timefold-solver-core-impl</artifactId>
+      <artifactId>timefold-solver-core</artifactId>
     </dependency>
     <!-- External dependencies -->
     <!-- Logging -->

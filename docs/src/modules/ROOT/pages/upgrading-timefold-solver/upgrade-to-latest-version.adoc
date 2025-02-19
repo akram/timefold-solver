@@ -1,0 +1,641 @@
+[#upgradeToLatestVersion]
+= Upgrade to the latest version
+:doctype: book
+:sectnums:
+:icons: font
+
+Timefold Solver public APIs are backwards compatible,
+but users often also use internal Solver classes which are not guaranteed to stay compatible.
+This upgrade recipe minimizes the pain to upgrade your code
+and to take advantage of the newest features in Timefold Solver.
+
+[#automaticUpgradeToLatestVersion]
+== Automatic upgrade to the latest version
+
+For many of the upgrade steps mentioned later,
+we actually provide an upgrade tool that can automatically apply those changes to Java files.
+This tool is based on OpenRewrite and can be run as a Maven or Gradle plugin.
+To run the tool, execute the following command in your project directory:
+
+[tabs]
+====
+Maven::
++
+--
+[source,shell,subs=attributes+]
+----
+mvn org.openrewrite.maven:rewrite-maven-plugin:{rewrite-maven-plugin-version}:run -Drewrite.recipeArtifactCoordinates=ai.timefold.solver:timefold-solver-migration:{timefold-solver-version} -Drewrite.activeRecipes=ai.timefold.solver.migration.ToLatest
+----
+--
+
+Gradle::
++
+--
+[source,shell,subs=attributes+]
+----
+curl https://timefold.ai/product/upgrade/upgrade-timefold.gradle > upgrade-timefold.gradle ; gradle -Dorg.gradle.jvmargs=-Xmx2G --init-script upgrade-timefold.gradle rewriteRun -DtimefoldSolverVersion={timefold-solver-version} ; rm upgrade-timefold.gradle
+----
+--
+====
+
+Having done that, you can check the local changes and commit them.
+Note that none of the upgrade steps could be automatically applied,
+and it may still be worth your while to read the rest the upgrade recipe below.
+
+For the time being, Kotlin users need to follow the upgrade recipe and apply the steps manually.
+
+[#manualUpgrade]
+== Manual upgrade recipe
+
+Every upgrade note indicates how likely your code will be affected by that change:
+
+- icon:magic[] *Automated*: Can be applied automatically using our <<automaticUpgradeToLatestVersion,upgrade tooling>>.
+- icon:exclamation-triangle[role=red] *Major*: Likely to affect your code.
+- icon:info-circle[role=yellow] *Minor*: Unlikely to affect your code, especially if you stick to public API.
+- icon:eye[] *Recommended*: Does not affect backwards compatibility, but you probably want to be aware.
+
+The upgrade recipe often lists the changes as they apply to Java code.
+We kindly ask Kotlin and Python users to translate the changes accordingly.
+
+=== Upgrade from 1.18.0 to 1.19.0
+
+.icon:info-circle[role=yellow] New argument to `FirstInitializedSolutionConsumer`
+[%collapsible%open]
+====
+The `FirstInitializedSolutionConsumer` of `SolverJob` gets an additional argument
+(`boolean isTerminatedEarly`),
+used to indicate that the solver terminated early and therefore the solution may not be fully initialized.
+
+Before in `*.java`:
+
+[source,java]
+----
+var solverJob = solverManager.solveBuilder()
+    .withFirstInitializedSolutionConsumer(solution -> {...})
+    ...
+----
+
+After in `*.java`:
+
+[source,java]
+----
+var solverJob = solverManager.solveBuilder()
+    .withFirstInitializedSolutionConsumer((solution, isTerminatedEarly) -> {...})
+    ...
+----
+====
+
+
+=== Upgrade from 1.15.0 to 1.16.0
+
+.icon:info-circle[role=yellow] Undo tabu no longer supported
+[%collapsible%open]
+====
+Configuring tabu search with an undo tabu is no longer supported.
+Configuration options mentioning the undo tabu are still kept for backwards compatibility,
+but they do not have any effect on the solver's behavior.
+
+Regular tabu search continues to be supported as before without any changes to its behavior.
+
+Before in `solverConfig.xml`:
+
+[source,xml,options="nowrap"]
+----
+<acceptor>
+  <moveTabuSize>7</moveTabuSize>
+  <undoMoveTabuSize>7</undoMoveTabuSize>
+</acceptor>
+----
+
+After in `solverConfig.xml`:
+
+[source,xml,options="nowrap"]
+----
+<acceptor>
+  <moveTabuSize>7</moveTabuSize>
+</acceptor>
+----
+====
+
+'''
+
+.icon:info-circle[role=yellow] Custom undo moves no longer required
+[%collapsible%open]
+====
+Due to underlying improvements to the solver, we can now generate undo moves automatically
+and no longer require the user to provide them.
+If you implemented custom moves,
+your implementations of undo moves will no longer be used and can be removed from your codebase.
+Methods in the `Move` interface that deal with undo moves have been deprecated
+and will be removed in a future major version of Timefold Solver.
+====
+
+'''
+
+.icon:info-circle[role=yellow] `ConstraintAnalysis.matchCount()` no longer throws an exception
+[%collapsible%open]
+====
+Previously in xref:constraints-and-score/understanding-the-score.adoc[score analysis],
+when there were no matches for a constraint,
+`ConstraintAnalysis.matchCount()` would throw an exception instead of returning a number.
+The behavior has been changed to depend on selected `ScoreAnalysisFetchPolicy`:
+
+- With `FETCH_ALL`, constraint match analysis will be performed, constraint matches will be available,
+and the method will return their precise count.
+- With `FETCH_MATCH_COUNT`, constraint match analysis will still be performed
+and the method will return the precise count of constraint matches.
+The constraint matches themselves will not be available.
+This is useful for situations
+where the score analysis with a full list of matches can be expected to be too large to transmit over the wire.
+- With `FETCH_SHALLOW`, constraint match analysis will not run, constraint matches will not be available
+and the method will return `-1`.
+
+====
+
+=== Upgrade from 1.14.0 to 1.15.0
+
+.icon:magic[] _Assignment Recommendation API_ replaces the _Recommended Fit API_
+[%collapsible%open]
+====
+`SolutionManager.recommendFit(...)` has been renamed to `SolutionManager.recommendAssignment(...)`,
+without changing its behavior.
+The original method has been deprecated and will be removed in a future major version.
+
+Before in `*.java`:
+
+[source,java]
+----
+SolutionManager<EmployeeSchedule, HardSoftScore> solutionManager = ...;
+List<RecommendedFit<Employee, HardSoftScore>> recommendations =
+    solutionManager.recommendFit(employeeSchedule, unassignedShift, Shift::getEmployee);
+----
+
+After in `*.java`:
+
+[source,java]
+----
+SolutionManager<EmployeeSchedule, HardSoftScore> solutionManager = ...;
+List<RecommendedAssignment<Employee, HardSoftScore>> recommendations =
+    solutionManager.recommendAssignment(employeeSchedule, unassignedShift, Shift::getEmployee);
+----
+====
+
+'''
+
+.icon:eye[] "Score calculation speed" replaced by "Move evaluation speed"
+[%collapsible%open]
+====
+In Timefold Solver's logging, the term "Score calculation speed" has been replaced by "Move evaluation speed".
+This reflects the fact that the solver evaluates moves, and each move can result in multiple score calculations.
+To avoid confusion, we have updated the logging messages to use the new term.
+
+This change is purely cosmetic and does not affect the behavior of the solver, or your code.
+====
+
+
+=== Upgrade from 1.12.0 to 1.13.0
+
+icon:exclamation-triangle[role=red] `@ConstraintConfiguration` deprecated
+[%collapsible%open]
+====
+`@ConstraintConfiguration` has been deprecated and will be removed in a future major version.
+Please use xref:constraints-and-score/constraint-configuration.adoc#definingAndOverridingConstraintWeights[constraint weight overrides] instead.
+
+Before in `*ConstraintProvider.java`:
+
+[source,java]
+----
+...
+    .penalizeConfigurable()
+    .asConstraint("maxHoursWorked");
+...
+----
+
+After in `*ConstraintProvider.java`:
+
+[source,java]
+----
+...
+    .penalize(ONE_SOFT)
+    .asConstraint("maxHoursWorked");
+...
+----
+
+Before in `*Solution.java`:
+
+[source,java]
+----
+...
+    @ConstraintConfiguration
+    private MyConstraintConfiguration myConstraintConfiguration;
+...
+----
+
+After in `*Solution.java`:
+
+[source,java]
+----
+...
+    ConstraintWeightOverrides<HardSoftScore> constraintWeightOverrides;
+...
+    constraintWeightOverrides = ConstraintWeightOverrides.of(
+        Map.of(
+            "maxHoursWorked", HardSoftScore.ofSoft(10)
+        )
+    );
+...
+----
+
+====
+
+'''
+
+.icon:info-circle[role=yellow] Constraint packages have been deprecated
+[%collapsible%open]
+====
+In the solver, constraints are uniquely identified by their package and name.
+We have now deprecated the package name and we recommend to keep constraint names unique instead.
+
+Before in `*ConstraintProvider.java`:
+
+[source,java]
+----
+...
+    .penalize(ONE_SOFT)
+    .asConstraint("employees.paris", "maxHoursWorked");
+...
+----
+
+After in `*ConstraintProvider.java`:
+
+[source,java]
+----
+...
+    .penalize(ONE_SOFT)
+    .asConstraint("employees.paris.maxHoursWorked");
+...
+----
+
+While constraint packages are still supported, they will be removed in a future major version.
+====
+
+'''
+
+.icon:info-circle[role=yellow] `ConstraintCollectors.toMap()` now respects the optional merge function
+[%collapsible%open]
+====
+In your constraints, the following code may now behave differently:
+
+[source,java]
+----
+...
+return constraintFactory.forEach(Entity.class)
+    .groupBy(
+        ConstraintCollectors.toMap(
+            entity -> entity.name(),
+            entity -> entity.id(),
+            (entityId1, entityId2) -> Math.max(entityId1, entityId2)
+        )
+    )
+...
+----
+
+The final argument to the mapping collector is now respected,
+where previously it was wrongly ignored under certain conditions.
+This may result in the map being populated differently than before.
+====
+
+=== Upgrade from 1.9.0 to 1.10.0
+
+.icon:info-circle[role=yellow] Pinning unassigned entities now fails fast, unless allowed
+[%collapsible%open]
+====
+The solver behavior has changed in the following situation:
+
+1. There is a planning entity with a `@PlanningVariable` that does not allow unassigned values.
+2. And that planning entity is pinned.
+3. And that variable is set to `null`, therefore unassigned.
+
+This situation is both unlikely and erroneous.
+The solver is asked to require all variables to be assigned, but at the same time one variable is forced unassigned.
+
+Before Timefold Solver 1.10.0, this would result in Construction Heuristics finishing with a negative `init` score.
+Starting with Timefold Solver 1.10.0, this situation will result in a runtime exception.
+
+Read more about xref:using-timefold-solver/modeling-planning-problems.adoc#planningVariableAllowingUnassigned[explicitly allowing unassigned values].
+====
+
+'''
+
+.icon:eye[] Enterprise Edition Maven Repository will soon require authentication
+[%collapsible%open]
+====
+Users of Enterprise Edition will soon need to authenticate to access Timefold's Maven Repository.
+
+If you are a Timefold customer, a Timefold representative will reach out to you
+to give you the necessary credentials, as well as sufficient time to make the necessary changes.
+
+If you are not a Timefold customer and you wish to retain your access to the Enterprise Edition artifacts,
+you can https://timefold.ai/contact[contact us] to start your evaluation.
+There are https://timefold.ai/pricing[many benefits] to being a Timefold customer.
+
+For more information on setting up the Enterprise Edition Maven Repository,
+see xref:enterprise-edition/enterprise-edition.adoc#switchToEnterpriseEdition[the Enterprise Edition documentation].
+====
+
+'''
+
+.icon:info-circle[role=yellow] `LookupStrategyType` deprecated for removal
+[%collapsible%open]
+====
+`LookupStrategyType` is used in xref:enterprise-edition/enterprise-edition.adoc#multithreadedIncrementalSolving[multi-threaded incremental solving]
+to specify how the solver should match entities and facts between parent and child score directors.
+The default value is `PLANNING_ID_OR_NONE`, which means
+that the solver will look up entities by their xref:using-timefold-solver/modeling-planning-problems.adoc#planningId[planning ID].
+If the solver doesn't find anything with that ID, it will throw an exception.
+
+In a future version of _Timefold Solver_, we will remove the option of configuring the lookup strategy.
+The behavior will be fixed to the behavior explained above.
+To prepare for this change,
+remove the use of `@PlanningSolution.lookupStrategyType`
+and ensure that your planning entities and problem facts have a `@PlanningId`-annotated field.
+
+Before in `Timetable.java`:
+
+[source,java]
+----
+@PlanningSolution(lookUpStrategyType = LookUpStrategyType.PLANNING_ID_OR_NONE)
+public class Timetable {
+    ...
+}
+----
+
+After in `Timetable.java`:
+
+[source,java]
+----
+@PlanningSolution
+public class Timetable {
+    ...
+}
+----
+
+Before in `Lesson.java`:
+
+[source,java]
+----
+@PlanningEntity
+public class Lesson {
+
+    private String id;
+    ...
+
+}
+----
+
+After in `Lesson.java`:
+
+[source,java]
+----
+@PlanningEntity
+public class Lesson {
+
+    @PlanningId
+    private String id;
+    ...
+
+}
+----
+
+
+====
+
+.icon:info-circle[role=yellow] Removed the `examples` module
+[%collapsible%open]
+====
+We have finished the process of removing the Swing-based examples.
+The legacy examples from the solver codebase have been removed entirely.
+
+You can find better, more modern implementations of these use cases in our quickstarts, including:
+
+- `bed-allocation`,
+- `conference-scheduling`,
+- `employee-scheduling`,
+- `facility-location`,
+- `flight-crew-scheduling`,
+- `food-packaging`,
+- `maintenance-scheduling`,
+- `meeting-scheduling`,
+- `order-picking`,
+- `project-job-scheduling`,
+- `school-timetabling`,
+- `sports-league-scheduling`,
+- `task-assigning`,
+- `tournament-scheduling`,
+- and `vehicle-routing`.
+====
+
+.icon:info-circle[role=yellow] Simplified the quickstarts artifact names
+[%collapsible%open]
+====
+We have simplified and renamed all quickstarts `artifactId` names.
+For example, the old artifact name `timefold-solver-quarkus-vehicle-routing-quickstart` became `vehicle-routing`.
+
+====
+
+'''
+
+=== Upgrade from 1.8.0 to 1.9.0
+
+.icon:info-circle[role=yellow] Removed several of the old examples
+[%collapsible%open]
+====
+We have started the process of removing the ancient Swing-based examples.
+In the first wave, we have removed the following examples from the `examples` module:
+
+- `cloudbalancing`,
+- `conferencescheduling`,
+- `curriculumcourse`,
+- `examination`,
+- `flightcrewscheduling`,
+- `machinereassignment`,
+- `meetingscheduling`,
+- `nqueens`,
+- `pas`,
+- `tsp`,
+- and `vehiclerouting`.
+
+You can find better, more modern implementations of these use cases in our quickstarts.
+The other examples on the list were removed without a replacement as we didn't see sufficient traction.
+
+Going forward, our intention is to convert every other current example into a quickstart
+and remove the original Swing-based examples from the solver codebase entirely.
+====
+
+'''
+
+.icon:info-circle[role=yellow] Several internal modules folded into `timefold-solver-core`
+[%collapsible%open]
+====
+The following JAR files have been merged into `timefold-solver-core`:
+
+- `timefold-solver-core-impl`,
+- `timefold-solver-constraint-streams`.
+
+`timefold-solver-core` was previously an empty module that served as an aggregator for the above modules.
+Now it contains the source code for both modules directly.
+The automatic module name for this module is `ai.timefold.solver.core`.
+
+The root package of Constraint Streams implementation classes has changed.
+If you have any custom code that references these classes,
+you will need to update the imports to point `ai.timefold.solver.core.impl.score.stream.bavet`.
+
+Finally, with the folding of these modules into `timefold-solver-core`,
+the solver no longer relies on `ServiceLoader`s to find implementations of Constraint Streams,
+or to find the Enterprise Edition.
+
+None of these changes are likely to affect you, unless you have chosen to depend on internal classes and modules.
+====
+
+'''
+
+=== Upgrade from 1.7.0 to 1.8.0
+
+.icon:exclamation-triangle[role=red] Constraint Verifier: Check your tests if you use the planning list variable
+[%collapsible%open]
+====
+In some cases, especially if you've reused our https://github.com/TimefoldAI/timefold-quickstarts/tree/stable/java/food-packaging[Food Packaging quickstart], you may see your tests failing after the upgrade.
+This is due to a bug fix in xref:constraints-and-score/score-calculation.adoc#constraintStreams[Constraint Streams], which now currently handles values not present in any list variable.
+
+If your code has a shadow entity whose xref:using-timefold-solver/modeling-planning-problems.adoc#listVariableShadowVariablesInverseRelation[inverse relation shadow variable] is a planning list variable and your test leaves that reference `null`, the constraints will no longer take that shadow entity into account.
+This will result in `ConstraintVerifier` failing the test, as the expected number of penalties/rewards will no longer match the actual number.
+
+You can solve this problem by manually assigning a value to the inverse relation shadow variable.
+
+Before in `*ConstraintProviderTest.java`:
+
+[source,java]
+----
+Job job = new Job("job1", ...);
+
+constraintVerifier.verifyThat(FoodPackagingConstraintProvider::maxEndDateTime)
+    .given(job)
+    .penalizesBy(...);
+----
+
+After in `*ConstraintProviderTest.java`:
+
+[source,java]
+----
+Job job = new Job("job1",  ...);
+Line line = new Line("line1", ...);
+job.setLine(line);
+
+constraintVerifier.verifyThat(FoodPackagingConstraintProvider::maxEndDateTime)
+    .given(job)
+    .penalizesBy(...);
+----
+
+The aforementioned quickstart unfortunately did not follow our own guidance on the use of shadow variables, which is why it exposed this bug.
+====
+
+'''
+
+.icon:magic[] Constraint Streams: Rename `forEachIncludingNullVars` to `forEachIncludingUnassigned`
+[%collapsible%open]
+====
+To better align with the newly introduced support for
+xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariableAllowingUnassigned[unassigned values in list variables], several methods in xref:constraints-and-score/score-calculation.adoc#constraintStreams[Constraint Streams]
+which dealt with `null` variable values have been renamed.
+
+Before in `*ConstraintProvider.java`:
+
+[source,java]
+----
+Constraint myConstraint(ConstraintFactory constraintFactory) {
+    return constraintFactory.forEachIncludingNullVars(Shift.class)
+       ...;
+}
+----
+
+After in `*ConstraintProvider.java`:
+
+[source,java]
+----
+Constraint myConstraint(ConstraintFactory constraintFactory) {
+    return constraintFactory.forEachIncludingUnassigned(Shift.class)
+       ...;
+}
+----
+
+Similarly, the following methods on `UniConstraintStream` have been renamed:
+
+* `ifExistsIncludingNullVars` to `ifExistsIncludingUnassigned`,
+* `ifExistsOtherIncludingNullVars` to `ifExistsOtherIncludingUnassigned`,
+* `ifNotExistsIncludingNullVars` to `ifNotExistsIncludingUnassigned`,
+* `ifNotExistsOtherIncludingNullVars` to `ifNotExistsOtherIncludingUnassigned`.
+
+On `BiConstraintStream` and its `Tri` and `Quad` counterparts, the following methods have been renamed as well:
+
+* `ifExistsIncludingNullVars` to `ifExistsIncludingUnassigned`,
+* `ifNotExistsIncludingNullVars` to `ifNotExistsIncludingUnassigned`.
+====
+
+'''
+
+.icon:magic[] Rename `nullable` attribute of `@PlanningVariable` to `allowsUnassigned`
+[%collapsible%open]
+====
+To better align with the newly introduced support for
+xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariableAllowingUnassigned[unassigned values in list variables], the `nullable` attribute of `@PlanningVariable` has been renamed to `allowsUnassigned`.
+
+Before in `*.java`:
+
+[source,java]
+----
+@PlanningVariable(nullable = true)
+private Bed bed;
+----
+
+After in `*.java`:
+
+[source,java]
+----
+@PlanningVariable(allowsUnassigned = true)
+private Bed bed;
+----
+====
+
+'''
+
+.icon:magic[] Constraint Verifier: assertion methods `message` argument comes first now
+[%collapsible%open]
+====
+To better align with the newly introduced support for testing justifications and indictments, the assertion methods which accepted a `message` argument now have it as the first argument.
+
+Before in `*ConstraintProviderTest.java`:
+
+[source,java]
+----
+constraintVerifier.verifyThat(MyConstraintProvider::myConstraint)
+    .given()
+    .penalizesBy(0, "There should no penalties");
+----
+
+After in `*ConstraintProvider.java`:
+
+[source,java]
+----
+constraintVerifier.verifyThat(MyConstraintProvider::myConstraint)
+    .given()
+    .penalizesBy("There should no penalties", 0);
+----
+
+Similarly to the `penalizesBy` method, the following methods were also affected:
+
+* `penalizes`,
+* `rewards`,
+* `rewardsWith`.
+====
+
+

@@ -6,12 +6,13 @@
   <parent>
     <groupId>ai.timefold.solver</groupId>
     <artifactId>timefold-solver-quarkus-parent</artifactId>
-    <version>0.9.39-SNAPSHOT</version>
+    <version>999-SNAPSHOT</version>
   </parent>
 
   <artifactId>timefold-solver-quarkus-integration-test</artifactId>
   <name>Timefold Solver Quarkus - Integration tests</name>
   <description>Quarkus integration tests for Timefold</description>
+  <url>https://timefold.ai</url>
 
   <properties>
     <java.module.name>ai.timefold.solver.quarkus</java.module.name>
@@ -60,7 +61,6 @@
         </executions>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
         <executions>
           <execution>
@@ -111,7 +111,7 @@
         </plugins>
       </build>
       <properties>
-        <quarkus.package.type>native</quarkus.package.type>
+        <quarkus.native.enabled>true</quarkus.native.enabled>
       </properties>
     </profile>
   </profiles>

@@ -1,6 +1,8 @@
 package ai.timefold.solver.jackson.api;
 
+import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
 import ai.timefold.solver.core.api.score.buildin.bendable.BendableScore;
 import ai.timefold.solver.core.api.score.buildin.bendablebigdecimal.BendableBigDecimalScore;
 import ai.timefold.solver.core.api.score.buildin.bendablelong.BendableLongScore;
@@ -13,8 +15,22 @@ import ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecimalScore;
 import ai.timefold.solver.core.api.score.buildin.simplelong.SimpleLongScore;
+import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
+import ai.timefold.solver.core.api.score.stream.common.Break;
+import ai.timefold.solver.core.api.score.stream.common.LoadBalance;
+import ai.timefold.solver.core.api.score.stream.common.Sequence;
+import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
+import ai.timefold.solver.core.api.solver.RecommendedAssignment;
+import ai.timefold.solver.core.api.solver.RecommendedFit;
+import ai.timefold.solver.core.impl.domain.solution.DefaultConstraintWeightOverrides;
+import ai.timefold.solver.core.impl.solver.DefaultRecommendedAssignment;
+import ai.timefold.solver.core.preview.api.domain.solution.diff.PlanningEntityDiff;
+import ai.timefold.solver.core.preview.api.domain.solution.diff.PlanningSolutionDiff;
+import ai.timefold.solver.core.preview.api.domain.solution.diff.PlanningVariableDiff;
+import ai.timefold.solver.jackson.api.domain.solution.ConstraintWeightOverridesSerializer;
 import ai.timefold.solver.jackson.api.score.PolymorphicScoreJacksonDeserializer;
 import ai.timefold.solver.jackson.api.score.PolymorphicScoreJacksonSerializer;
+import ai.timefold.solver.jackson.api.score.analysis.ScoreAnalysisJacksonSerializer;
 import ai.timefold.solver.jackson.api.score.buildin.bendable.BendableScoreJacksonDeserializer;
 import ai.timefold.solver.jackson.api.score.buildin.bendable.BendableScoreJacksonSerializer;
 import ai.timefold.solver.jackson.api.score.buildin.bendablebigdecimal.BendableBigDecimalScoreJacksonDeserializer;
@@ -39,8 +55,24 @@ import ai.timefold.solver.jackson.api.score.buildin.simplebigdecimal.SimpleBigDe
 import ai.timefold.solver.jackson.api.score.buildin.simplebigdecimal.SimpleBigDecimalScoreJacksonSerializer;
 import ai.timefold.solver.jackson.api.score.buildin.simplelong.SimpleLongScoreJacksonDeserializer;
 import ai.timefold.solver.jackson.api.score.buildin.simplelong.SimpleLongScoreJacksonSerializer;
+import ai.timefold.solver.jackson.api.score.constraint.ConstraintRefJacksonDeserializer;
+import ai.timefold.solver.jackson.api.score.constraint.ConstraintRefJacksonSerializer;
+import ai.timefold.solver.jackson.api.score.stream.common.BreakJacksonDeserializer;
+import ai.timefold.solver.jackson.api.score.stream.common.BreakJacksonSerializer;
+import ai.timefold.solver.jackson.api.score.stream.common.LoadBalanceJacksonDeserializer;
+import ai.timefold.solver.jackson.api.score.stream.common.LoadBalanceJacksonSerializer;
+import ai.timefold.solver.jackson.api.score.stream.common.SequenceChainJacksonDeserializer;
+import ai.timefold.solver.jackson.api.score.stream.common.SequenceChainJacksonSerializer;
+import ai.timefold.solver.jackson.api.score.stream.common.SequenceJacksonDeserializer;
+import ai.timefold.solver.jackson.api.score.stream.common.SequenceJacksonSerializer;
+import ai.timefold.solver.jackson.api.solver.RecommendedAssignmentJacksonSerializer;
+import ai.timefold.solver.jackson.api.solver.RecommendedFitJacksonSerializer;
 import ai.timefold.solver.jackson.impl.domain.solution.JacksonSolutionFileIO;
+import ai.timefold.solver.jackson.preview.api.domain.solution.diff.PlanningEntityDiffJacksonSerializer;
+import ai.timefold.solver.jackson.preview.api.domain.solution.diff.PlanningSolutionDiffJacksonSerializer;
+import ai.timefold.solver.jackson.preview.api.domain.solution.diff.PlanningVariableDiffJacksonSerializer;
 
+import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -66,6 +98,7 @@ public class TimefoldJacksonModule extends SimpleModule {
      * @deprecated Have the module loaded automatically via {@link JacksonSolutionFileIO} or use {@link #createModule()}.
      *             This constructor will be hidden in a future major version of Timefold.
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Deprecated(forRemoval = true)
     public TimefoldJacksonModule() {
         super("Timefold");
@@ -97,6 +130,34 @@ public class TimefoldJacksonModule extends SimpleModule {
         addDeserializer(BendableLongScore.class, new BendableLongScoreJacksonDeserializer());
         addSerializer(BendableBigDecimalScore.class, new BendableBigDecimalScoreJacksonSerializer());
         addDeserializer(BendableBigDecimalScore.class, new BendableBigDecimalScoreJacksonDeserializer());
+
+        // Score analysis
+        addSerializer(ConstraintRef.class, new ConstraintRefJacksonSerializer());
+        addDeserializer(ConstraintRef.class, new ConstraintRefJacksonDeserializer());
+        addSerializer(ScoreAnalysis.class, new ScoreAnalysisJacksonSerializer());
+        var serializer = (JsonSerializer) new RecommendedAssignmentJacksonSerializer<>();
+        addSerializer(RecommendedAssignment.class, serializer);
+        addSerializer(DefaultRecommendedAssignment.class, serializer);
+        addSerializer(RecommendedFit.class, (JsonSerializer) new RecommendedFitJacksonSerializer<>());
+
+        // Constraint weights
+        addSerializer(ConstraintWeightOverrides.class, new ConstraintWeightOverridesSerializer());
+        addSerializer(DefaultConstraintWeightOverrides.class, new ConstraintWeightOverridesSerializer());
+
+        // Constraint collectors
+        addSerializer(Break.class, new BreakJacksonSerializer());
+        addDeserializer(Break.class, new BreakJacksonDeserializer<>());
+        addSerializer(Sequence.class, new SequenceJacksonSerializer());
+        addDeserializer(Sequence.class, new SequenceJacksonDeserializer<>());
+        addSerializer(SequenceChain.class, new SequenceChainJacksonSerializer());
+        addDeserializer(SequenceChain.class, new SequenceChainJacksonDeserializer<>());
+        addSerializer(LoadBalance.class, new LoadBalanceJacksonSerializer());
+        addDeserializer(LoadBalance.class, new LoadBalanceJacksonDeserializer<>());
+
+        // Solution diff
+        addSerializer(PlanningSolutionDiff.class, new PlanningSolutionDiffJacksonSerializer());
+        addSerializer(PlanningEntityDiff.class, new PlanningEntityDiffJacksonSerializer());
+        addSerializer(PlanningVariableDiff.class, new PlanningVariableDiffJacksonSerializer());
     }
 
 }

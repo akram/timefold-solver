@@ -24,7 +24,6 @@ import ai.timefold.solver.benchmark.config.statistic.SingleStatisticType;
 import ai.timefold.solver.benchmark.impl.loader.FileProblemProvider;
 import ai.timefold.solver.benchmark.impl.loader.InstanceProblemProvider;
 import ai.timefold.solver.benchmark.impl.loader.ProblemProvider;
-import ai.timefold.solver.benchmark.impl.measurement.ScoreDifferencePercentage;
 import ai.timefold.solver.benchmark.impl.ranking.TotalScoreSingleBenchmarkRankingComparator;
 import ai.timefold.solver.benchmark.impl.report.BenchmarkReport;
 import ai.timefold.solver.benchmark.impl.report.ReportHelper;
@@ -34,9 +33,11 @@ import ai.timefold.solver.benchmark.impl.statistic.bestscore.BestScoreProblemSta
 import ai.timefold.solver.benchmark.impl.statistic.bestsolutionmutation.BestSolutionMutationProblemStatistic;
 import ai.timefold.solver.benchmark.impl.statistic.memoryuse.MemoryUseProblemStatistic;
 import ai.timefold.solver.benchmark.impl.statistic.movecountperstep.MoveCountPerStepProblemStatistic;
+import ai.timefold.solver.benchmark.impl.statistic.moveevaluationspeed.MoveEvaluationSpeedProblemStatisticTime;
 import ai.timefold.solver.benchmark.impl.statistic.scorecalculationspeed.ScoreCalculationSpeedProblemStatistic;
 import ai.timefold.solver.benchmark.impl.statistic.stepscore.StepScoreProblemStatistic;
 import ai.timefold.solver.core.api.domain.solution.PlanningScore;
+import ai.timefold.solver.core.api.solver.ProblemSizeStatistics;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
@@ -67,6 +68,7 @@ public class ProblemBenchmarkResult<Solution_> {
             @XmlElement(name = "bestScoreProblemStatistic", type = BestScoreProblemStatistic.class),
             @XmlElement(name = "stepScoreProblemStatistic", type = StepScoreProblemStatistic.class),
             @XmlElement(name = "scoreCalculationSpeedProblemStatistic", type = ScoreCalculationSpeedProblemStatistic.class),
+            @XmlElement(name = "moveEvaluationSpeedProblemStatistic", type = MoveEvaluationSpeedProblemStatisticTime.class),
             @XmlElement(name = "bestSolutionMutationProblemStatistic", type = BestSolutionMutationProblemStatistic.class),
             @XmlElement(name = "moveCountPerStepProblemStatistic", type = MoveCountPerStepProblemStatistic.class),
             @XmlElement(name = "memoryUseProblemStatistic", type = MemoryUseProblemStatistic.class),
@@ -163,10 +165,12 @@ public class ProblemBenchmarkResult<Solution_> {
         return entityCount;
     }
 
+    @SuppressWarnings("unused") // Used by FreeMarker.
     public Long getVariableCount() {
         return variableCount;
     }
 
+    @SuppressWarnings("unused") // Used by FreeMarker.
     public Long getMaximumValueCount() {
         return maximumValueCount;
     }
@@ -175,6 +179,7 @@ public class ProblemBenchmarkResult<Solution_> {
         return problemScale;
     }
 
+    @SuppressWarnings("unused") // Used by FreeMarker.
     public Long getInputSolutionLoadingTimeMillisSpent() {
         return inputSolutionLoadingTimeMillisSpent;
     }
@@ -195,10 +200,12 @@ public class ProblemBenchmarkResult<Solution_> {
         return winningSingleBenchmarkResult;
     }
 
+    @SuppressWarnings("unused") // Used by FreeMarker.
     public SingleBenchmarkResult getWorstSingleBenchmarkResult() {
         return worstSingleBenchmarkResult;
     }
 
+    @SuppressWarnings("unused") // Used by FreeMarker.
     public Long getWorstScoreCalculationSpeed() {
         return worstScoreCalculationSpeed;
     }
@@ -207,6 +214,7 @@ public class ProblemBenchmarkResult<Solution_> {
     // Smart getters
     // ************************************************************************
 
+    @SuppressWarnings("unused") // Used by FreeMarker.
     public String getAnchorId() {
         return ReportHelper.escapeHtmlId(name);
     }
@@ -234,6 +242,7 @@ public class ProblemBenchmarkResult<Solution_> {
         return singleBenchmarkResultList.size() - failureCount > 0;
     }
 
+    @SuppressWarnings("unused") // Used by FreeMarker.
     public boolean hasAnyStatistic() {
         if (problemStatisticList.size() > 0) {
             return true;
@@ -255,6 +264,7 @@ public class ProblemBenchmarkResult<Solution_> {
         return false;
     }
 
+    @SuppressWarnings("unused") // Used by FreeMarker.
     public Collection<SingleStatisticType> extractSingleStatisticTypeList() {
         Set<SingleStatisticType> singleStatisticTypeSet = new LinkedHashSet<>();
         for (SingleBenchmarkResult singleBenchmarkResult : singleBenchmarkResultList) {
@@ -266,6 +276,7 @@ public class ProblemBenchmarkResult<Solution_> {
         return singleStatisticTypeSet;
     }
 
+    @SuppressWarnings("unused") // Used by FreeMarker.
     public List<PureSubSingleStatistic> extractPureSubSingleStatisticList(SingleStatisticType singleStatisticType) {
         List<PureSubSingleStatistic> pureSubSingleStatisticList = new ArrayList<>(
                 singleBenchmarkResultList.size());
@@ -332,9 +343,6 @@ public class ProblemBenchmarkResult<Solution_> {
         }
         determineTotalsAndAveragesAndRanking();
         determineWinningScoreDifference();
-        for (ProblemStatistic problemStatistic : problemStatisticList) {
-            problemStatistic.accumulateResults(benchmarkReport);
-        }
     }
 
     private void determineTotalsAndAveragesAndRanking() {
@@ -414,45 +422,42 @@ public class ProblemBenchmarkResult<Solution_> {
      * HACK to avoid loading the problem just to extract its problemScale.
      * Called multiple times, for every {@link SingleBenchmarkResult} of this {@link ProblemBenchmarkResult}.
      *
-     * @param registeringEntityCount {@code >= 0}
-     * @param registeringVariableCount {@code >= 0}
-     * @param registeringProblemScale {@code >= 0}
+     * @param problemSizeStatistics never null
      */
-    public void registerScale(long registeringEntityCount, long registeringVariableCount,
-            long registeringMaximumValueCount, long registeringProblemScale) {
+    public void registerProblemSizeStatistics(ProblemSizeStatistics problemSizeStatistics) {
         if (entityCount == null) {
-            entityCount = registeringEntityCount;
-        } else if (entityCount.longValue() != registeringEntityCount) {
+            entityCount = problemSizeStatistics.entityCount();
+        } else if (entityCount.longValue() != problemSizeStatistics.entityCount()) {
             LOGGER.warn("The problemBenchmarkResult ({}) has different entityCount values ([{},{}]).\n"
                     + "This is normally impossible for 1 inputSolutionFile.",
-                    getName(), entityCount, registeringEntityCount);
+                    getName(), entityCount, problemSizeStatistics.entityCount());
             // The entityCount is not unknown (null), but known to be ambiguous
             entityCount = -1L;
         }
         if (variableCount == null) {
-            variableCount = registeringVariableCount;
-        } else if (variableCount.longValue() != registeringVariableCount) {
+            variableCount = problemSizeStatistics.variableCount();
+        } else if (variableCount.longValue() != problemSizeStatistics.variableCount()) {
             LOGGER.warn("The problemBenchmarkResult ({}) has different variableCount values ([{},{}]).\n"
                     + "This is normally impossible for 1 inputSolutionFile.",
-                    getName(), variableCount, registeringVariableCount);
+                    getName(), variableCount, problemSizeStatistics.variableCount());
             // The variableCount is not unknown (null), but known to be ambiguous
             variableCount = -1L;
         }
         if (maximumValueCount == null) {
-            maximumValueCount = registeringMaximumValueCount;
-        } else if (maximumValueCount.longValue() != registeringMaximumValueCount) {
-            LOGGER.warn("The problemBenchmarkResult ({}) has different maximumValueCount values ([{},{}]).\n"
+            maximumValueCount = problemSizeStatistics.approximateValueCount();
+        } else if (maximumValueCount.longValue() != problemSizeStatistics.approximateValueCount()) {
+            LOGGER.warn("The problemBenchmarkResult ({}) has different approximateValueCount values ([{},{}]).\n"
                     + "This is normally impossible for 1 inputSolutionFile.",
-                    getName(), maximumValueCount, registeringMaximumValueCount);
-            // The maximumValueCount is not unknown (null), but known to be ambiguous
+                    getName(), maximumValueCount, problemSizeStatistics.approximateValueCount());
+            // The approximateValueCount is not unknown (null), but known to be ambiguous
             maximumValueCount = -1L;
         }
         if (problemScale == null) {
-            problemScale = registeringProblemScale;
-        } else if (problemScale.longValue() != registeringProblemScale) {
+            problemScale = problemSizeStatistics.approximateProblemScaleLogAsFixedPointLong();
+        } else if (problemScale.longValue() != problemSizeStatistics.approximateProblemScaleLogAsFixedPointLong()) {
             LOGGER.warn("The problemBenchmarkResult ({}) has different problemScale values ([{},{}]).\n"
                     + "This is normally impossible for 1 inputSolutionFile.",
-                    getName(), problemScale, registeringProblemScale);
+                    getName(), problemScale, problemSizeStatistics.approximateProblemScaleLogAsFixedPointLong());
             // The problemScale is not unknown (null), but known to be ambiguous
             problemScale = -1L;
         }
@@ -461,24 +466,24 @@ public class ProblemBenchmarkResult<Solution_> {
     /**
      * Used by {@link ai.timefold.solver.benchmark.impl.ProblemBenchmarksFactory#buildProblemBenchmarkList}.
      *
-     * @param o sometimes null
+     * @param other sometimes null
      * @return true if equal
      */
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
+    public boolean equals(Object other) {
+        if (this == other) {
             return true;
-        } else if (o instanceof ProblemBenchmarkResult) {
-            ProblemBenchmarkResult other = (ProblemBenchmarkResult) o;
-            return problemProvider.equals(other.getProblemProvider());
-        } else {
+        }
+        if (other == null || getClass() != other.getClass()) {
             return false;
         }
+        ProblemBenchmarkResult<?> that = (ProblemBenchmarkResult<?>) other;
+        return Objects.equals(problemProvider, that.problemProvider);
     }
 
     @Override
     public int hashCode() {
-        return problemProvider.hashCode();
+        return Objects.hash(problemProvider);
     }
 
     // ************************************************************************

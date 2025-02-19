@@ -1,12 +1,18 @@
 package ai.timefold.solver.migration.fork;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
+import ai.timefold.solver.migration.AbstractRecipe;
+
 import org.openrewrite.Recipe;
 import org.openrewrite.gradle.ChangeDependencyArtifactId;
 import org.openrewrite.gradle.ChangeDependencyGroupId;
 import org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId;
 import org.openrewrite.maven.ChangeManagedDependencyGroupIdAndArtifactId;
 
-public class TimefoldChangeDependencies extends Recipe {
+public final class TimefoldChangeDependencies extends AbstractRecipe {
 
     private static final String[] ARTIFACT_SUFFIXES = new String[] {
             "parent",
@@ -57,10 +63,7 @@ public class TimefoldChangeDependencies extends Recipe {
             "docs"
     };
 
-    @Override
-    public String getDisplayName() {
-        return "Migrate all Maven and Gradle groupIds and artifactIds from OptaPlanner to Timefold.";
-    }
+    private final List<Recipe> recipeList = new ArrayList<>();
 
     public TimefoldChangeDependencies() {
         String oldGroupId = "org.optaplanner";
@@ -82,12 +85,39 @@ public class TimefoldChangeDependencies extends Recipe {
             String newArtifactId = "timefold-solver-" + newArtifactSuffix;
 
             // Maven
-            doNext(new ChangeManagedDependencyGroupIdAndArtifactId(oldGroupId, oldArtifactId, newGroupId, newArtifactId, null));
-            doNext(new ChangeDependencyGroupIdAndArtifactId(oldGroupId, oldArtifactId, newGroupId, newArtifactId, null, null));
+            recipeList.add(new ChangeManagedDependencyGroupIdAndArtifactId(oldGroupId, oldArtifactId, newGroupId, newArtifactId,
+                    null));
+            recipeList.add(
+                    new ChangeDependencyGroupIdAndArtifactId(oldGroupId, oldArtifactId, newGroupId, newArtifactId, null, null));
             // Gradle
-            doNext(new ChangeDependencyArtifactId(oldGroupId, oldArtifactId, newArtifactId, null));
+            recipeList.add(new ChangeDependencyArtifactId(oldGroupId, oldArtifactId, newArtifactId, null));
         }
         // TODO Do not use "*" approach. This is a workaround for https://github.com/openrewrite/rewrite/issues/2994
-        doNext(new ChangeDependencyGroupId(oldGroupId, "*", newGroupId, null));
+        recipeList.add(new ChangeDependencyGroupId(oldGroupId, "*", newGroupId, null));
+    }
+
+    @Override
+    public String getDisplayName() {
+        return "Migrate all Maven and Gradle groupIds and artifactIds from OptaPlanner to Timefold";
+    }
+
+    @Override
+    public String getDescription() {
+        return getDisplayName() + ".";
+    }
+
+    @Override
+    public List<Recipe> getRecipeList() {
+        return recipeList;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof TimefoldChangeDependencies other && recipeList.equals(other.recipeList);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), recipeList);
     }
 }

@@ -1,12 +1,12 @@
-[[helloWorldJavaQuickStart]]
-= Hello world Java quick start
+[#helloWorldQuickStart]
+= Hello World Quick Start Guide
 :doctype: book
 :imagesdir: ../..
 :sectnums:
 :icons: font
 include::../../_attributes.adoc[]
 
-This guide walks you through the process of creating a simple Java application
+This guide walks you through the process of creating a simple Java, Python or Kotlin application
 with https://timefold.ai[Timefold]'s constraint solving Artificial Intelligence (AI).
 
 == What you will build
@@ -49,7 +49,7 @@ Mathematically speaking, school timetabling is an _NP-hard_ problem.
 This means it is difficult to scale.
 Simply brute force iterating through all possible combinations takes millions of years
 for a non-trivial dataset, even on a supercomputer.
-Fortunately, AI constraint solvers such as Timefold have advanced algorithms
+Fortunately, AI constraint solvers such as Timefold Solver have advanced algorithms
 that deliver a near-optimal solution in a reasonable amount of time.
 
 == Solution source code
@@ -68,16 +68,48 @@ $ git clone {quickstarts-clone-url}
 +
 .. Download an {quickstarts-archive-url}[archive].
 
-. Find the solution in {hello-world-java-quickstart-url}[the `hello-world` directory].
+. Find the solution in
++
+[tabs]
+====
+Java::
+{hello-world-java-quickstart-url}[the `java` directory].
+
+Kotlin::
+{hello-world-java-quickstart-url}[the `java` directory].
+
+Python::
+{hello-world-python-quickstart-url}[the `python` directory].
+====
+
 . Follow the instructions in the README file to run the application.
 
 == Prerequisites
 
 To complete this guide, you need:
 
+[tabs]
+====
+Java::
++
+--
+include::../shared/java-prerequisites.adoc[]
+--
+
+Kotlin::
++
+--
+include::../shared/java-prerequisites.adoc[]
+--
+
+Python::
++
+--
 * https://adoptopenjdk.net/[JDK] {java-version}+ with `JAVA_HOME` configured appropriately
-* https://maven.apache.org/download.html[Apache Maven] {maven-version}+ or https://gradle.org/install/[Gradle] 7+
-* An IDE, such as https://www.jetbrains.com/idea[IntelliJ IDEA], VSCode or Eclipse
+* https://www.python.org/downloads/[Python] {python-version}+
+* An IDE, such as https://www.jetbrains.com/pycharm/[IntelliJ PyCharm] or https://code.visualstudio.com[VSCode]
+--
+====
 
 == The build file and the dependencies
 
@@ -85,9 +117,14 @@ Create a Maven or Gradle build file and add these dependencies:
 
 * `timefold-solver-core` (compile scope) to solve the school timetable problem.
 * `timefold-solver-test` (test scope) to JUnit test the school timetabling constraints.
-* A xref:configuration/configuration.adoc#logging[logging] implementation, such as `logback-classic` (runtime scope), to see what Timefold is doing.
+* A xref:using-timefold-solver/running-the-solver.adoc#logging[logging] implementation, such as `logback-classic` (runtime scope), to see what Timefold Solver is doing.
 
-If you choose Maven, your `pom.xml` file has the following content:
+[tabs]
+====
+Maven::
++
+--
+Your `pom.xml` file has the following content:
 
 [source,xml,subs=attributes+]
 ----
@@ -97,7 +134,7 @@ If you choose Maven, your `pom.xml` file has the following content:
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.acme</groupId>
-  <artifactId>timefold-solver-hello-world-school-timetabling-quickstart</artifactId>
+  <artifactId>hello-world-school-timetabling</artifactId>
   <version>1.0-SNAPSHOT</version>
 
   <properties>
@@ -117,7 +154,7 @@ If you choose Maven, your `pom.xml` file has the following content:
       <dependency>
         <groupId>ch.qos.logback</groupId>
         <artifactId>logback-classic</artifactId>
-        <version>1.2.3</version>
+        <version>{logback-version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -146,17 +183,21 @@ If you choose Maven, your `pom.xml` file has the following content:
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
-        <version>3.0.0</version>
+        <version>{exec-maven-plugin-version}</version>
         <configuration>
-          <mainClass>org.acme.schooltimetabling.TimeTableApp</mainClass>
+          <mainClass>org.acme.schooltimetabling.TimetableApp</mainClass>
         </configuration>
       </plugin>
     </plugins>
   </build>
 </project>
 ----
+--
 
-On the other hand, in Gradle, your `build.gradle` file has this content:
+Gradle::
++
+--
+Your `build.gradle` file has this content:
 
 [source,groovy,subs=attributes+]
 ----
@@ -166,7 +207,7 @@ plugins {
 }
 
 def timefoldSolverVersion = "{timefold-solver-version}"
-def logbackVersion = "1.2.9"
+def logbackVersion = "{logback-version}"
 
 group = "org.acme"
 version = "1.0-SNAPSHOT"
@@ -198,7 +239,7 @@ compileTestJava {
 }
 
 application {
-    mainClass = "org.acme.schooltimetabling.TimeTableApp"
+    mainClass = "org.acme.schooltimetabling.TimetableApp"
 }
 
 test {
@@ -208,10 +249,37 @@ test {
     }
 }
 ----
+--
 
-include::../school-timetabling/school-timetabling-model.adoc[leveloffset=+1]
-include::../school-timetabling/school-timetabling-constraints.adoc[leveloffset=+1]
-include::../school-timetabling/school-timetabling-solution.adoc[leveloffset=+1]
+Python::
++
+--
+Your `pyproject.toml` file has this content:
+
+[source,toml,subs=attributes+]
+----
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+
+[project]
+name = "hello_world"
+version = "1.0.0"
+requires-python = ">= {python-version}"
+dependencies = [
+    "timefold == {timefold-solver-python-version}",
+    "pytest == 8.2.2"
+]
+
+
+----
+--
+====
+
+include::../shared/school-timetabling/school-timetabling-model.adoc[leveloffset=+1]
+include::../shared/school-timetabling/school-timetabling-constraints.adoc[leveloffset=+1]
+include::../shared/school-timetabling/school-timetabling-solution.adoc[leveloffset=+1]
 
 == Create the application
 
@@ -228,7 +296,13 @@ to build a new `Solver` instance for each problem dataset to solve.
 A `SolverFactory` is thread-safe, but a `Solver` is not.
 In this case, there is only one dataset, so only one `Solver` instance.
 
-Create the `src/main/java/org/acme/schooltimetabling/TimeTableApp.java` class:
+[tabs]
+====
+Java::
++
+--
+
+Create the `src/main/java/org/acme/schooltimetabling/TimetableApp.java` class:
 
 [source,java]
 ----
@@ -241,135 +315,132 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
-import org.acme.schooltimetabling.domain.Lesson;
-import org.acme.schooltimetabling.domain.Room;
-import org.acme.schooltimetabling.domain.TimeTable;
-import org.acme.schooltimetabling.domain.Timeslot;
-import org.acme.schooltimetabling.solver.TimeTableConstraintProvider;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.solver.SolverConfig;
+import org.acme.schooltimetabling.domain.Lesson;
+import org.acme.schooltimetabling.domain.Room;
+import org.acme.schooltimetabling.domain.Timeslot;
+import org.acme.schooltimetabling.domain.Timetable;
+import org.acme.schooltimetabling.solver.TimetableConstraintProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TimeTableApp {
+public class TimetableApp {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(TimeTableApp.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TimetableApp.class);
 
     public static void main(String[] args) {
-        SolverFactory<TimeTable> solverFactory = SolverFactory.create(new SolverConfig()
-                .withSolutionClass(TimeTable.class)
+        SolverFactory<Timetable> solverFactory = SolverFactory.create(new SolverConfig()
+                .withSolutionClass(Timetable.class)
                 .withEntityClasses(Lesson.class)
-                .withConstraintProviderClass(TimeTableConstraintProvider.class)
+                .withConstraintProviderClass(TimetableConstraintProvider.class)
                 // The solver runs only for 5 seconds on this small dataset.
                 // It's recommended to run for at least 5 minutes ("5m") otherwise.
                 .withTerminationSpentLimit(Duration.ofSeconds(5)));
 
         // Load the problem
-        TimeTable problem = generateDemoData();
+        Timetable problem = generateDemoData();
 
         // Solve the problem
-        Solver<TimeTable> solver = solverFactory.buildSolver();
-        TimeTable solution = solver.solve(problem);
+        Solver<Timetable> solver = solverFactory.buildSolver();
+        Timetable solution = solver.solve(problem);
 
         // Visualize the solution
         printTimetable(solution);
     }
 
-    public static TimeTable generateDemoData() {
-        List<Timeslot> timeslotList = new ArrayList<>(10);
-        timeslotList.add(new Timeslot(DayOfWeek.MONDAY, LocalTime.of(8, 30), LocalTime.of(9, 30)));
-        timeslotList.add(new Timeslot(DayOfWeek.MONDAY, LocalTime.of(9, 30), LocalTime.of(10, 30)));
-        timeslotList.add(new Timeslot(DayOfWeek.MONDAY, LocalTime.of(10, 30), LocalTime.of(11, 30)));
-        timeslotList.add(new Timeslot(DayOfWeek.MONDAY, LocalTime.of(13, 30), LocalTime.of(14, 30)));
-        timeslotList.add(new Timeslot(DayOfWeek.MONDAY, LocalTime.of(14, 30), LocalTime.of(15, 30)));
+    public static Timetable generateDemoData() {
+        List<Timeslot> timeslots = new ArrayList<>(10);
+        timeslots.add(new Timeslot(DayOfWeek.MONDAY, LocalTime.of(8, 30), LocalTime.of(9, 30)));
+        timeslots.add(new Timeslot(DayOfWeek.MONDAY, LocalTime.of(9, 30), LocalTime.of(10, 30)));
+        timeslots.add(new Timeslot(DayOfWeek.MONDAY, LocalTime.of(10, 30), LocalTime.of(11, 30)));
+        timeslots.add(new Timeslot(DayOfWeek.MONDAY, LocalTime.of(13, 30), LocalTime.of(14, 30)));
+        timeslots.add(new Timeslot(DayOfWeek.MONDAY, LocalTime.of(14, 30), LocalTime.of(15, 30)));
 
-        timeslotList.add(new Timeslot(DayOfWeek.TUESDAY, LocalTime.of(8, 30), LocalTime.of(9, 30)));
-        timeslotList.add(new Timeslot(DayOfWeek.TUESDAY, LocalTime.of(9, 30), LocalTime.of(10, 30)));
-        timeslotList.add(new Timeslot(DayOfWeek.TUESDAY, LocalTime.of(10, 30), LocalTime.of(11, 30)));
-        timeslotList.add(new Timeslot(DayOfWeek.TUESDAY, LocalTime.of(13, 30), LocalTime.of(14, 30)));
-        timeslotList.add(new Timeslot(DayOfWeek.TUESDAY, LocalTime.of(14, 30), LocalTime.of(15, 30)));
+        timeslots.add(new Timeslot(DayOfWeek.TUESDAY, LocalTime.of(8, 30), LocalTime.of(9, 30)));
+        timeslots.add(new Timeslot(DayOfWeek.TUESDAY, LocalTime.of(9, 30), LocalTime.of(10, 30)));
+        timeslots.add(new Timeslot(DayOfWeek.TUESDAY, LocalTime.of(10, 30), LocalTime.of(11, 30)));
+        timeslots.add(new Timeslot(DayOfWeek.TUESDAY, LocalTime.of(13, 30), LocalTime.of(14, 30)));
+        timeslots.add(new Timeslot(DayOfWeek.TUESDAY, LocalTime.of(14, 30), LocalTime.of(15, 30)));
 
-        List<Room> roomList = new ArrayList<>(3);
-        roomList.add(new Room("Room A"));
-        roomList.add(new Room("Room B"));
-        roomList.add(new Room("Room C"));
+        List<Room> rooms = new ArrayList<>(3);
+        rooms.add(new Room("Room A"));
+        rooms.add(new Room("Room B"));
+        rooms.add(new Room("Room C"));
 
-        List<Lesson> lessonList = new ArrayList<>();
-        long id = 0;
-        lessonList.add(new Lesson(id++, "Math", "A. Turing", "9th grade"));
-        lessonList.add(new Lesson(id++, "Math", "A. Turing", "9th grade"));
-        lessonList.add(new Lesson(id++, "Physics", "M. Curie", "9th grade"));
-        lessonList.add(new Lesson(id++, "Chemistry", "M. Curie", "9th grade"));
-        lessonList.add(new Lesson(id++, "Biology", "C. Darwin", "9th grade"));
-        lessonList.add(new Lesson(id++, "History", "I. Jones", "9th grade"));
-        lessonList.add(new Lesson(id++, "English", "I. Jones", "9th grade"));
-        lessonList.add(new Lesson(id++, "English", "I. Jones", "9th grade"));
-        lessonList.add(new Lesson(id++, "Spanish", "P. Cruz", "9th grade"));
-        lessonList.add(new Lesson(id++, "Spanish", "P. Cruz", "9th grade"));
+        List<Lesson> lessons = new ArrayList<>();
+        long nextLessonId = 0L;
+        lessons.add(new Lesson(Long.toString(nextLessonId++), "Math", "A. Turing", "9th grade"));
+        lessons.add(new Lesson(Long.toString(nextLessonId++), "Math", "A. Turing", "9th grade"));
+        lessons.add(new Lesson(Long.toString(nextLessonId++), "Physics", "M. Curie", "9th grade"));
+        lessons.add(new Lesson(Long.toString(nextLessonId++), "Chemistry", "M. Curie", "9th grade"));
+        lessons.add(new Lesson(Long.toString(nextLessonId++), "Biology", "C. Darwin", "9th grade"));
+        lessons.add(new Lesson(Long.toString(nextLessonId++), "History", "I. Jones", "9th grade"));
+        lessons.add(new Lesson(Long.toString(nextLessonId++), "English", "I. Jones", "9th grade"));
+        lessons.add(new Lesson(Long.toString(nextLessonId++), "English", "I. Jones", "9th grade"));
+        lessons.add(new Lesson(Long.toString(nextLessonId++), "Spanish", "P. Cruz", "9th grade"));
+        lessons.add(new Lesson(Long.toString(nextLessonId++), "Spanish", "P. Cruz", "9th grade"));
 
-        lessonList.add(new Lesson(id++, "Math", "A. Turing", "10th grade"));
-        lessonList.add(new Lesson(id++, "Math", "A. Turing", "10th grade"));
-        lessonList.add(new Lesson(id++, "Math", "A. Turing", "10th grade"));
-        lessonList.add(new Lesson(id++, "Physics", "M. Curie", "10th grade"));
-        lessonList.add(new Lesson(id++, "Chemistry", "M. Curie", "10th grade"));
-        lessonList.add(new Lesson(id++, "French", "M. Curie", "10th grade"));
-        lessonList.add(new Lesson(id++, "Geography", "C. Darwin", "10th grade"));
-        lessonList.add(new Lesson(id++, "History", "I. Jones", "10th grade"));
-        lessonList.add(new Lesson(id++, "English", "P. Cruz", "10th grade"));
-        lessonList.add(new Lesson(id++, "Spanish", "P. Cruz", "10th grade"));
+        lessons.add(new Lesson(Long.toString(nextLessonId++), "Math", "A. Turing", "10th grade"));
+        lessons.add(new Lesson(Long.toString(nextLessonId++), "Math", "A. Turing", "10th grade"));
+        lessons.add(new Lesson(Long.toString(nextLessonId++), "Math", "A. Turing", "10th grade"));
+        lessons.add(new Lesson(Long.toString(nextLessonId++), "Physics", "M. Curie", "10th grade"));
+        lessons.add(new Lesson(Long.toString(nextLessonId++), "Chemistry", "M. Curie", "10th grade"));
+        lessons.add(new Lesson(Long.toString(nextLessonId++), "French", "M. Curie", "10th grade"));
+        lessons.add(new Lesson(Long.toString(nextLessonId++), "Geography", "C. Darwin", "10th grade"));
+        lessons.add(new Lesson(Long.toString(nextLessonId++), "History", "I. Jones", "10th grade"));
+        lessons.add(new Lesson(Long.toString(nextLessonId++), "English", "P. Cruz", "10th grade"));
+        lessons.add(new Lesson(Long.toString(nextLessonId), "Spanish", "P. Cruz", "10th grade"));
 
-        return new TimeTable(timeslotList, roomList, lessonList);
+        return new Timetable(timeslots, rooms, lessons);
     }
 
-    private static void printTimetable(TimeTable timeTable) {
-        LOGGER.info("");
-        List<Room> roomList = timeTable.getRoomList();
-        List<Lesson> lessonList = timeTable.getLessonList();
-        Map<Timeslot, Map<Room, List<Lesson>>> lessonMap = lessonList.stream()
+    private static void printTimetable(Timetable timetable) {
+               LOGGER.info("");
+        List<Room> rooms = timetable.getRooms();
+        List<Lesson> lessons = timetable.getLessons();
+        Map<Timeslot, Map<Room, List<Lesson>>> lessonMap = lessons.stream()
                 .filter(lesson -> lesson.getTimeslot() != null && lesson.getRoom() != null)
                 .collect(Collectors.groupingBy(Lesson::getTimeslot, Collectors.groupingBy(Lesson::getRoom)));
-        LOGGER.info("|            | " + roomList.stream()
+        LOGGER.info("|            | " + rooms.stream()
                 .map(room -> String.format("%-10s", room.getName())).collect(Collectors.joining(" | ")) + " |");
-        LOGGER.info("|" + "------------|".repeat(roomList.size() + 1));
-        for (Timeslot timeslot : timeTable.getTimeslotList()) {
-            List<List<Lesson>> cellList = roomList.stream()
+        LOGGER.info("|" + "------------|".repeat(rooms.size() + 1));
+        for (Timeslot timeslot : timetable.getTimeslots()) {
+            List<List<Lesson>> cells = rooms.stream()
                     .map(room -> {
                         Map<Room, List<Lesson>> byRoomMap = lessonMap.get(timeslot);
                         if (byRoomMap == null) {
                             return Collections.<Lesson>emptyList();
                         }
-                        List<Lesson> cellLessonList = byRoomMap.get(room);
-                        if (cellLessonList == null) {
-                            return Collections.<Lesson>emptyList();
-                        }
-                        return cellLessonList;
-                    })
-                    .collect(Collectors.toList());
+                        List<Lesson> cellLessons = byRoomMap.get(room);
+                        return Objects.requireNonNullElse(cellLessons, Collections.<Lesson>emptyList());
+                    }).toList();
 
             LOGGER.info("| " + String.format("%-10s",
                     timeslot.getDayOfWeek().toString().substring(0, 3) + " " + timeslot.getStartTime()) + " | "
-                    + cellList.stream().map(cellLessonList -> String.format("%-10s",
-                            cellLessonList.stream().map(Lesson::getSubject).collect(Collectors.joining(", "))))
+                    + cells.stream().map(cellLessons -> String.format("%-10s",
+                            cellLessons.stream().map(Lesson::getSubject).collect(Collectors.joining(", "))))
                             .collect(Collectors.joining(" | "))
                     + " |");
             LOGGER.info("|            | "
-                    + cellList.stream().map(cellLessonList -> String.format("%-10s",
-                            cellLessonList.stream().map(Lesson::getTeacher).collect(Collectors.joining(", "))))
+                    + cells.stream().map(cellLessons -> String.format("%-10s",
+                            cellLessons.stream().map(Lesson::getTeacher).collect(Collectors.joining(", "))))
                             .collect(Collectors.joining(" | "))
                     + " |");
             LOGGER.info("|            | "
-                    + cellList.stream().map(cellLessonList -> String.format("%-10s",
-                            cellLessonList.stream().map(Lesson::getStudentGroup).collect(Collectors.joining(", "))))
+                    + cells.stream().map(cellLessons -> String.format("%-10s",
+                            cellLessons.stream().map(Lesson::getStudentGroup).collect(Collectors.joining(", "))))
                             .collect(Collectors.joining(" | "))
                     + " |");
-            LOGGER.info("|" + "------------|".repeat(roomList.size() + 1));
+            LOGGER.info("|" + "------------|".repeat(rooms.size() + 1));
         }
-        List<Lesson> unassignedLessons = lessonList.stream()
+        List<Lesson> unassignedLessons = lessons.stream()
                 .filter(lesson -> lesson.getTimeslot() == null || lesson.getRoom() == null)
-                .collect(Collectors.toList());
+                .toList();
         if (!unassignedLessons.isEmpty()) {
             LOGGER.info("");
             LOGGER.info("Unassigned lessons");
@@ -381,19 +452,370 @@ public class TimeTableApp {
 
 }
 ----
+--
+
+Kotlin::
++
+--
+Create the `src/main/kotlin/org/acme/schooltimetabling/TimetableApp.kt` class:
+
+[source,kotlin]
+----
+package org.acme.schooltimetabling
+
+import ai.timefold.solver.core.api.solver.SolverFactory
+import ai.timefold.solver.core.config.solver.SolverConfig
+import org.acme.schooltimetabling.domain.Lesson
+import org.acme.schooltimetabling.domain.Room
+import org.acme.schooltimetabling.domain.Timeslot
+import org.acme.schooltimetabling.domain.Timetable
+import org.acme.schooltimetabling.solver.TimetableConstraintProvider
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import java.time.DayOfWeek
+import java.time.Duration
+import java.time.LocalTime
+import java.util.Objects
+import java.util.function.Function
+import java.util.stream.Collectors
+
+
+
+object TimetableApp {
+    private val LOGGER: Logger = LoggerFactory.getLogger(TimetableApp::class.java)
+
+    @JvmStatic
+    fun main(args: Array<String>) {
+        val solverFactory = SolverFactory.create<Timetable>(
+            SolverConfig()
+                .withSolutionClass(Timetable::class.java)
+                .withEntityClasses(Lesson::class.java)
+                .withConstraintProviderClass(TimetableConstraintProvider::class.java)
+                // The solver runs only for 5 seconds on this small dataset.
+                // It's recommended to run for at least 5 minutes ("5m") otherwise.
+                .withTerminationSpentLimit(Duration.ofSeconds(5))
+        )
+
+        // Load the problem
+        val problem = generateDemoData(DemoData.SMALL)
+
+        // Solve the problem
+        val solver = solverFactory.buildSolver()
+        val solution = solver.solve(problem)
+
+        // Visualize the solution
+        printTimetable(solution)
+    }
+
+    fun generateDemoData(): Timetable {
+        val timeslots: MutableList<Timeslot> = ArrayList(10)
+        timeslots.add(Timeslot(DayOfWeek.MONDAY, LocalTime.of(8, 30), LocalTime.of(9, 30)))
+        timeslots.add(Timeslot(DayOfWeek.MONDAY, LocalTime.of(9, 30), LocalTime.of(10, 30)))
+        timeslots.add(Timeslot(DayOfWeek.MONDAY, LocalTime.of(10, 30), LocalTime.of(11, 30)))
+        timeslots.add(Timeslot(DayOfWeek.MONDAY, LocalTime.of(13, 30), LocalTime.of(14, 30)))
+        timeslots.add(Timeslot(DayOfWeek.MONDAY, LocalTime.of(14, 30), LocalTime.of(15, 30)))
+
+        timeslots.add(Timeslot(DayOfWeek.TUESDAY, LocalTime.of(8, 30), LocalTime.of(9, 30)))
+        timeslots.add(Timeslot(DayOfWeek.TUESDAY, LocalTime.of(9, 30), LocalTime.of(10, 30)))
+        timeslots.add(Timeslot(DayOfWeek.TUESDAY, LocalTime.of(10, 30), LocalTime.of(11, 30)))
+        timeslots.add(Timeslot(DayOfWeek.TUESDAY, LocalTime.of(13, 30), LocalTime.of(14, 30)))
+        timeslots.add(Timeslot(DayOfWeek.TUESDAY, LocalTime.of(14, 30), LocalTime.of(15, 30)))
+
+        val rooms: MutableList<Room> = ArrayList(3)
+        rooms.add(Room("Room A"))
+        rooms.add(Room("Room B"))
+        rooms.add(Room("Room C"))
+
+        val lessons: MutableList<Lesson> = ArrayList()
+        var nextLessonId = 0L
+        lessons.add(Lesson(nextLessonId++.toString(), "Math", "A. Turing", "9th grade"))
+        lessons.add(Lesson(nextLessonId++.toString(), "Math", "A. Turing", "9th grade"))
+        lessons.add(Lesson(nextLessonId++.toString(), "Physics", "M. Curie", "9th grade"))
+        lessons.add(Lesson(nextLessonId++.toString(), "Chemistry", "M. Curie", "9th grade"))
+        lessons.add(Lesson(nextLessonId++.toString(), "Biology", "C. Darwin", "9th grade"))
+        lessons.add(Lesson(nextLessonId++.toString(), "History", "I. Jones", "9th grade"))
+        lessons.add(Lesson(nextLessonId++.toString(), "English", "I. Jones", "9th grade"))
+        lessons.add(Lesson(nextLessonId++.toString(), "English", "I. Jones", "9th grade"))
+        lessons.add(Lesson(nextLessonId++.toString(), "Spanish", "P. Cruz", "9th grade"))
+        lessons.add(Lesson(nextLessonId++.toString(), "Spanish", "P. Cruz", "9th grade"))
+
+        lessons.add(Lesson(nextLessonId++.toString(), "Math", "A. Turing", "10th grade"))
+        lessons.add(Lesson(nextLessonId++.toString(), "Math", "A. Turing", "10th grade"))
+        lessons.add(Lesson(nextLessonId++.toString(), "Math", "A. Turing", "10th grade"))
+        lessons.add(Lesson(nextLessonId++.toString(), "Physics", "M. Curie", "10th grade"))
+        lessons.add(Lesson(nextLessonId++.toString(), "Chemistry", "M. Curie", "10th grade"))
+        lessons.add(Lesson(nextLessonId++.toString(), "French", "M. Curie", "10th grade"))
+        lessons.add(Lesson(nextLessonId++.toString(), "Geography", "C. Darwin", "10th grade"))
+        lessons.add(Lesson(nextLessonId++.toString(), "History", "I. Jones", "10th grade"))
+        lessons.add(Lesson(nextLessonId++.toString(), "English", "P. Cruz", "10th grade"))
+        lessons.add(Lesson(nextLessonId.toString(), "Spanish", "P. Cruz", "10th grade"))
+
+        return Timetable(timeslots, rooms, lessons)
+    }
+
+    private fun printTimetable(timeTable: Timetable) {
+        LOGGER.info("")
+        val rooms = timeTable.rooms
+        val lessons = timeTable.lessons
+        val lessonMap = lessons.stream()
+            .filter { lesson: Lesson -> lesson.timeslot != null && lesson.room != null }
+            .collect(
+                Collectors.groupingBy<Lesson, Timeslot, Any, Map<Room, List<Lesson>>>(
+                    Function { obj: Lesson -> obj.timeslot }, Collectors.groupingBy(
+                        Function { obj: Lesson -> obj.room })
+                )
+            )
+        LOGGER.info("|            | " + rooms.stream()
+            .map { room: Room -> String.format("%-10s", room.name) }.collect(Collectors.joining(" | ")) + " |"
+        )
+        LOGGER.info("|" + "------------|".repeat(rooms.size + 1))
+        for (timeslot in timeTable.timeslots) {
+            val cells = rooms.stream()
+                .map { room: Room ->
+                    val byRoomMap = lessonMap[timeslot]
+                        ?: return@map emptyList<Lesson>()
+                    val cellLessons = byRoomMap[room]!!
+                    Objects.requireNonNullElse(cellLessons, emptyList())
+                }.toList()
+
+            LOGGER.info("| " + String.format(
+                "%-10s",
+                timeslot.dayOfWeek.toString().substring(0, 3) + " " + timeslot.startTime
+            ) + " | "
+                    + cells.stream().map { cellLessons: List<Lesson> ->
+                String.format("%-10s",
+                    cellLessons.stream().map { obj: Lesson -> obj.subject }.collect(Collectors.joining(", "))
+                )
+            }
+                .collect(Collectors.joining(" | "))
+                    + " |")
+            LOGGER.info("|            | "
+                    + cells.stream().map { cellLessons: List<Lesson> ->
+                String.format("%-10s",
+                    cellLessons.stream().map { obj: Lesson -> obj.teacher }.collect(Collectors.joining(", "))
+                )
+            }
+                .collect(Collectors.joining(" | "))
+                    + " |")
+            LOGGER.info("|            | "
+                    + cells.stream().map { cellLessons: List<Lesson> ->
+                String.format("%-10s",
+                    cellLessons.stream().map { obj: Lesson -> obj.studentGroup }
+                        .collect(Collectors.joining(", ")))
+            }
+                .collect(Collectors.joining(" | "))
+                    + " |")
+            LOGGER.info("|" + "------------|".repeat(rooms.size + 1))
+        }
+        val unassignedLessons = lessons.stream()
+            .filter { lesson: Lesson -> lesson.timeslot == null || lesson.room == null }
+            .toList()
+        if (!unassignedLessons.isEmpty()) {
+            LOGGER.info("")
+            LOGGER.info("Unassigned lessons")
+            for (lesson in unassignedLessons) {
+                LOGGER.info("  " + lesson.subject + " - " + lesson.teacher + " - " + lesson.studentGroup)
+            }
+        }
+    }
+}
+----
+--
+
+Python::
++
+--
+Create `src/hello_world/main.py` with the following contents:
+
+[source,python]
+----
+from timefold.solver.config import (SolverConfig, ScoreDirectorFactoryConfig,
+                                    TerminationConfig, Duration)
+from timefold.solver import SolverFactory
+from datetime import time
+import logging
+import logging.config
+
+from .domain import *
+from .constraints import define_constraints
+
+logging.config.fileConfig('logging.conf')
+LOGGER = logging.getLogger('app')
+
+def main():
+    solver_factory = SolverFactory.create(
+        SolverConfig(
+            solution_class=Timetable,
+            entity_class_list=[Lesson],
+            score_director_factory_config=ScoreDirectorFactoryConfig(
+                constraint_provider_function=define_constraints
+            ),
+            termination_config=TerminationConfig(
+                # The solver runs only for 5 seconds on this small dataset.
+                # It's recommended to run for at least 5 minutes ("5m") otherwise.
+                spent_limit=Duration(seconds=5)
+            )
+        ))
+
+    # Load the problem
+    problem = generate_demo_data()
+
+    # Solve the problem
+    solver = solver_factory.build_solver()
+    solution = solver.solve(problem)
+
+    # Visualize the solution
+    print_timetable(solution)
+
+
+def generate_demo_data() -> Timetable:
+    days = ('MONDAY', 'TUESDAY')
+    timeslots = [
+        Timeslot(day, start, start.replace(hour=start.hour + 1))
+        for day in days
+        for start in (time(8, 30), time(9, 30), time(10, 30), time(13, 30), time(14, 30))
+    ]
+
+    room_ids = ('A', 'B', 'C')
+    rooms = [Room(f'Room {name}') for name in room_ids]
+
+    lessons = []
+
+    def id_generator():
+        current = 0
+        while True:
+            yield str(current)
+            current += 1
+
+    ids = id_generator()
+    lessons.append(Lesson(next(ids), "Math", "A. Turing", "9th grade"))
+    lessons.append(Lesson(next(ids), "Math", "A. Turing", "9th grade"))
+    lessons.append(Lesson(next(ids), "Physics", "M. Curie", "9th grade"))
+    lessons.append(Lesson(next(ids), "Chemistry", "M. Curie", "9th grade"))
+    lessons.append(Lesson(next(ids), "Biology", "C. Darwin", "9th grade"))
+    lessons.append(Lesson(next(ids), "History", "I. Jones", "9th grade"))
+    lessons.append(Lesson(next(ids), "English", "I. Jones", "9th grade"))
+    lessons.append(Lesson(next(ids), "English", "I. Jones", "9th grade"))
+    lessons.append(Lesson(next(ids), "Spanish", "P. Cruz", "9th grade"))
+    lessons.append(Lesson(next(ids), "Spanish", "P. Cruz", "9th grade"))
+
+    lessons.append(Lesson(next(ids), "Math", "A. Turing", "10th grade"))
+    lessons.append(Lesson(next(ids), "Math", "A. Turing", "10th grade"))
+    lessons.append(Lesson(next(ids), "Math", "A. Turing", "10th grade"))
+    lessons.append(Lesson(next(ids), "Physics", "M. Curie", "10th grade"))
+    lessons.append(Lesson(next(ids), "Chemistry", "M. Curie", "10th grade"))
+    lessons.append(Lesson(next(ids), "French", "M. Curie", "10th grade"))
+    lessons.append(Lesson(next(ids), "Geography", "C. Darwin", "10th grade"))
+    lessons.append(Lesson(next(ids), "History", "I. Jones", "10th grade"))
+    lessons.append(Lesson(next(ids), "English", "P. Cruz", "10th grade"))
+    lessons.append(Lesson(next(ids), "Spanish", "P. Cruz", "10th grade"))
+
+    return Timetable("DEMO_DATA", timeslots, rooms, lessons)
+
+
+def print_timetable(time_table: Timetable) -> None:
+    LOGGER.info("")
+
+    column_width = 18
+    rooms = time_table.rooms
+    timeslots = time_table.timeslots
+    lessons = time_table.lessons
+    lesson_map = {
+        (lesson.room.name, lesson.timeslot.day_of_week, lesson.timeslot.start_time): lesson
+        for lesson in lessons
+        if lesson.room is not None and lesson.timeslot is not None
+    }
+    row_format = ("|{:<" + str(column_width) + "}") * (len(rooms) + 1) + "|"
+    sep_format = "+" + ((("-" * column_width) + "+") * (len(rooms) + 1))
+
+    LOGGER.info(sep_format)
+    LOGGER.info(row_format.format('', *[room.name for room in rooms]))
+    LOGGER.info(sep_format)
+
+    for timeslot in timeslots:
+        def get_row_lessons():
+            for room in rooms:
+                yield lesson_map.get((room.name, timeslot.day_of_week, timeslot.start_time),
+                                     Lesson('', '', '', ''))
+
+        row_lessons = [*get_row_lessons()]
+        LOGGER.info(row_format.format(str(timeslot), *[lesson.subject for lesson in row_lessons]))
+        LOGGER.info(row_format.format('', *[lesson.teacher for lesson in row_lessons]))
+        LOGGER.info(row_format.format('', *[lesson.student_group for lesson in row_lessons]))
+        LOGGER.info(sep_format)
+
+    unassigned_lessons = [lesson for lesson in lessons if lesson.room is None or lesson.timeslot is None]
+    if len(unassigned_lessons) > 0:
+        LOGGER.info("")
+        LOGGER.info("Unassigned lessons")
+        for lesson in unassigned_lessons:
+            LOGGER.info(f'    {lesson.subject} - {lesson.teacher} - {lesson.student_group}')
+
+
+if __name__ == '__main__':
+    main()
+----
+--
+====
 
 The `main()` method first creates the `SolverFactory`:
 
+[tabs]
+====
+Java::
++
+--
+
 [source,java]
 ----
-SolverFactory<TimeTable> solverFactory = SolverFactory.create(new SolverConfig()
-        .withSolutionClass(TimeTable.class)
+SolverFactory<Timetable> solverFactory = SolverFactory.create(
+    new SolverConfig()
+        .withSolutionClass(Timetable.class)
         .withEntityClasses(Lesson.class)
-        .withConstraintProviderClass(TimeTableConstraintProvider.class)
+        .withConstraintProviderClass(TimetableConstraintProvider.class)
         // The solver runs only for 5 seconds on this small dataset.
         // It's recommended to run for at least 5 minutes ("5m") otherwise.
         .withTerminationSpentLimit(Duration.ofSeconds(5)));
 ----
+--
+
+Kotlin::
++
+--
+[source,kotlin]
+----
+val solverFactory = SolverFactory.create<Timetable>(
+    SolverConfig()
+        .withSolutionClass(Timetable::class.java)
+        .withEntityClasses(Lesson::class.java)
+        .withConstraintProviderClass(TimetableConstraintProvider::class.java)
+        // The solver runs only for 5 seconds on this small dataset.
+        // It's recommended to run for at least 5 minutes ("5m") otherwise.
+        .withTerminationSpentLimit(Duration.ofSeconds(5)))
+----
+--
+
+Python::
++
+--
+[source,python]
+----
+solver_factory = SolverFactory.create(
+    SolverConfig(
+        solution_class=Timetable,
+        entity_class_list=[Lesson],
+        score_director_factory_config=ScoreDirectorFactoryConfig(
+            constraint_provider_function=define_constraints
+        ),
+        termination_config=TerminationConfig(
+            # The solver runs only for 5 seconds on this small dataset.
+            # It's recommended to run for at least 5 minutes ("5m") otherwise.
+            spent_limit=Duration(seconds=5)
+        )
+    ))
+----
+--
+====
 
 This registers the `@PlanningSolution` class, the `@PlanningEntity` classes,
 and the `ConstraintProvider` class, all of which you created earlier.
@@ -401,65 +823,157 @@ and the `ConstraintProvider` class, all of which you created earlier.
 Without a termination setting or a `terminationEarly()` event, the solver runs forever.
 To avoid that, the solver limits the solving time to five seconds.
 
-After five seconds, the `main()` method loads the problem, solves it, and prints the solution:
+The `main()` method loads the problem, solves it, and prints the solution after just over five seconds.
+
+[tabs]
+====
+Java::
++
+--
 
 [source,java]
 ----
-        // Load the problem
-        TimeTable problem = generateDemoData();
+// Load the problem
+Timetable problem = generateDemoData();
 
-        // Solve the problem
-        Solver<TimeTable> solver = solverFactory.buildSolver();
-        TimeTable solution = solver.solve(problem);
+// Solve the problem
+Solver<Timetable> solver = solverFactory.buildSolver();
+Timetable solution = solver.solve(problem);
 
-        // Visualize the solution
-        printTimetable(solution);
+// Visualize the solution
+printTimetable(solution);
 ----
+--
+
+Kotlin::
++
+--
+[source,kotlin]
+----
+// Load the problem
+val problem = generateDemoData(DemoData.SMALL)
+
+// Solve the problem
+val solver = solverFactory.buildSolver()
+val solution = solver.solve(problem)
+
+// Visualize the solution
+printTimetable(solution)
+----
+--
+
+Python::
++
+--
+[source,python]
+----
+# Load the problem
+problem = generate_demo_data(DemoData.SMALL)
+
+# Solve the problem
+solver = solver_factory.build_solver()
+solution = solver.solve(problem)
+
+# Visualize the solution
+print_timetable(solution)
+----
+--
+====
 
 The `solve()` method doesn't return instantly.
 It runs for five seconds before returning the best solution.
 
-Timefold returns _the best solution_ found in the available termination time.
-Due to xref:optimization-algorithms/optimization-algorithms.adoc#doesTimefoldFindTheOptimalSolution[the nature of NP-hard problems],
+Timefold Solver returns _the best solution_ found in the available termination time.
+Due to xref:optimization-algorithms/overview.adoc#doesTimefoldFindTheOptimalSolution[the nature of NP-hard problems],
 the best solution might not be optimal, especially for larger datasets.
 Increase the termination time to potentially find a better solution.
 
 The `generateDemoData()` method generates the school timetable problem to solve.
 
 The `printTimetable()` method pretty prints the timetable to the console,
-so it's easy to determine visually whether or not it's a good schedule.
+allowing to determine visually whether it's a good schedule.
 
 === Configure logging
 
 To see any output in the console, logging must be configured properly.
 
-Create the `src/main/resource/logback.xml` file:
-
-[source,xml]
+[tabs]
+====
+Java::
++
+--
+include::../shared/java-logback-config.adoc[]
 ----
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-
-  <appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
-    <encoder>
-      <pattern>%d{HH:mm:ss.SSS} [%-12.12t] %-5p %m%n</pattern>
-    </encoder>
-  </appender>
-
-  <logger name="ai.timefold.solver" level="info"/>
-
-  <root level="info">
-    <appender-ref ref="consoleAppender" />
-  </root>
-
-</configuration>
+--
+Kotlin::
++
+--
+include::../shared/java-logback-config.adoc[]
 ----
+--
+
+Python::
++
+--
+Create the `logging.conf` file:
+
+[source,text]
+----
+[loggers]
+keys=root,timefold_solver
+
+[handlers]
+keys=consoleHandler
+
+[formatters]
+keys=simpleFormatter
+
+[logger_root]
+level=INFO
+handlers=consoleHandler
+
+[logger_timefold_solver]
+level=INFO
+qualname=timefold.solver
+handlers=consoleHandler
+propagate=0
+
+[handler_consoleHandler]
+class=StreamHandler
+level=INFO
+formatter=simpleFormatter
+args=(sys.stdout,)
+
+[formatter_simpleFormatter]
+format=%(asctime)s - %(name)s - %(levelname)s - %(message)s
+----
+--
+====
 
 == Run the application
 
 === Run the application in IDE
 
-Run that `TimeTableApp` class as the main class of a normal Java application:
+[tabs]
+====
+Java::
++
+--
+Run the `TimetableApp` class as the main class of a normal Java application:
+--
+
+Kotlin::
++
+--
+Run the `TimetableApp` class as the main class of a normal Java application:
+--
+
+Python::
++
+--
+Run `src/hello_world/main.py`:
+--
+====
 
 ----
 ...
@@ -476,16 +990,16 @@ INFO  |            | 9th grade  | 10th grade |            |
 ----
 
 Verify the console output. Does it conform to all hard constraints?
-What happens if you comment out the `roomConflict` constraint in `TimeTableConstraintProvider`?
+What happens if you comment out the `roomConflict` constraint in `TimetableConstraintProvider`?
 
-The `info` log shows what Timefold did in those five seconds:
+The `info` log shows what Timefold Solver did in those five seconds:
 
 [source,options="nowrap"]
 ----
 ... Solving started: time spent (33), best score (-8init/0hard/0soft), environment mode (REPRODUCIBLE), random (JDK with seed 0).
-... Construction Heuristic phase (0) ended: time spent (73), best score (0hard/0soft), score calculation speed (459/sec), step total (4).
-... Local Search phase (1) ended: time spent (5000), best score (0hard/0soft), score calculation speed (28949/sec), step total (28398).
-... Solving ended: time spent (5000), best score (0hard/0soft), score calculation speed (28524/sec), phase total (2), environment mode (REPRODUCIBLE).
+... Construction Heuristic phase (0) ended: time spent (73), best score (0hard/0soft), move evaluation speed (459/sec), step total (4).
+... Local Search phase (1) ended: time spent (5000), best score (0hard/0soft), move evaluation speed (28949/sec), step total (28398).
+... Solving ended: time spent (5000), best score (0hard/0soft), move evaluation speed (28524/sec), phase total (2), environment mode (REPRODUCIBLE).
 ----
 
 === Test the application
@@ -498,7 +1012,14 @@ To test each constraint in isolation, use a `ConstraintVerifier` in unit tests.
 This tests each constraint's corner cases in isolation from the other tests,
 which lowers maintenance when adding a new constraint with proper test coverage.
 
-Create the `src/test/java/org/acme/schooltimetabling/solver/TimeTableConstraintProviderTest.java` class:
+
+[tabs]
+====
+Java::
++
+--
+
+Create the `src/test/java/org/acme/schooltimetabling/solver/TimetableConstraintProviderTest.java` class:
 
 [source,java]
 ----
@@ -509,34 +1030,116 @@ import java.time.LocalTime;
 
 import org.acme.schooltimetabling.domain.Lesson;
 import org.acme.schooltimetabling.domain.Room;
-import org.acme.schooltimetabling.domain.TimeTable;
+import org.acme.schooltimetabling.domain.Timetable;
 import org.acme.schooltimetabling.domain.Timeslot;
 import org.junit.jupiter.api.Test;
 import ai.timefold.solver.test.api.score.stream.ConstraintVerifier;
 
-class TimeTableConstraintProviderTest {
+class TimetableConstraintProviderTest {
 
     private static final Room ROOM1 = new Room("Room1");
     private static final Timeslot TIMESLOT1 = new Timeslot(DayOfWeek.MONDAY, LocalTime.NOON);
     private static final Timeslot TIMESLOT2 = new Timeslot(DayOfWeek.TUESDAY, LocalTime.NOON);
 
-    ConstraintVerifier<TimeTableConstraintProvider, TimeTable> constraintVerifier = ConstraintVerifier.build(
-            new TimeTableConstraintProvider(), TimeTable.class, Lesson.class);
+    ConstraintVerifier<TimetableConstraintProvider, Timetable> constraintVerifier = ConstraintVerifier.build(
+            new TimetableConstraintProvider(), Timetable.class, Lesson.class);
 
     @Test
     void roomConflict() {
         Lesson firstLesson = new Lesson(1, "Subject1", "Teacher1", "Group1", TIMESLOT1, ROOM1);
         Lesson conflictingLesson = new Lesson(2, "Subject2", "Teacher2", "Group2", TIMESLOT1, ROOM1);
         Lesson nonConflictingLesson = new Lesson(3, "Subject3", "Teacher3", "Group3", TIMESLOT2, ROOM1);
-        constraintVerifier.verifyThat(TimeTableConstraintProvider::roomConflict)
+        constraintVerifier.verifyThat(TimetableConstraintProvider::roomConflict)
                 .given(firstLesson, conflictingLesson, nonConflictingLesson)
                 .penalizesBy(1);
     }
 
 }
 ----
+--
 
-This test verifies that the constraint `TimeTableConstraintProvider::roomConflict` penalizes with a match weight of `1`
+Kotlin::
++
+--
+
+Create the `src/test/kotlin/org/acme/schooltimetabling/solver/TimetableConstraintProviderTest.kt` class:
+
+[source,kotlin]
+----
+package org.acme.schooltimetabling.solver
+
+import ai.timefold.solver.core.api.score.stream.ConstraintFactory
+import ai.timefold.solver.test.api.score.stream.ConstraintVerifier
+import org.acme.schooltimetabling.domain.Lesson
+import org.acme.schooltimetabling.domain.Room
+import org.acme.schooltimetabling.domain.Timeslot
+import org.acme.schooltimetabling.domain.Timetable
+import org.junit.jupiter.api.Test
+import java.time.DayOfWeek
+import java.time.LocalTime
+
+internal class TimetableConstraintProviderTest {
+    var constraintVerifier: ConstraintVerifier<TimetableConstraintProvider, Timetable> = ConstraintVerifier.build(
+        TimetableConstraintProvider(), Timetable::class.java, Lesson::class.java
+    )
+
+    @Test
+    fun roomConflict() {
+        val firstLesson = Lesson(1, "Subject1", "Teacher1", "Group1", TIMESLOT1, ROOM1)
+        val conflictingLesson = Lesson(2, "Subject2", "Teacher2", "Group2", TIMESLOT1, ROOM1)
+        val nonConflictingLesson = Lesson(3, "Subject3", "Teacher3", "Group3", TIMESLOT2, ROOM1)
+        constraintVerifier.verifyThat { obj: TimetableConstraintProvider, constraintFactory: ConstraintFactory? ->
+            obj.roomConflict(
+                constraintFactory
+            )
+        }
+            .given(firstLesson, conflictingLesson, nonConflictingLesson)
+            .penalizesBy(1)
+    }
+
+    companion object {
+        private val ROOM1 = Room("Room1")
+        private val TIMESLOT1 = Timeslot(DayOfWeek.MONDAY, LocalTime.NOON)
+        private val TIMESLOT2 = Timeslot(DayOfWeek.TUESDAY, LocalTime.NOON)
+    }
+}
+----
+--
+
+Python::
++
+--
+Create the `tests/test_constraints.py` file with the following contents:
+
+[source,python]
+----
+from timefold.solver.test import ConstraintVerifier
+from datetime import time
+
+from hello_world.domain import *
+from hello_world.constraints import *
+
+ROOM1 = Room("Room1")
+ROOM2 = Room("Room2")
+TIMESLOT1 = Timeslot("MONDAY", time(12, 0), time(13, 0))
+TIMESLOT2 = Timeslot("TUESDAY", time(12, 0), time(13, 0))
+TIMESLOT3 = Timeslot("TUESDAY", time(13, 0), time(14, 0))
+TIMESLOT4 = Timeslot("TUESDAY", time(15, 0), time(16, 0))
+
+constraint_verifier = ConstraintVerifier.build(define_constraints, Timetable, Lesson)
+
+def test_room_conflict():
+    first_lesson = Lesson("1", "Subject1", "Teacher1", "Group1", TIMESLOT1, ROOM1)
+    conflicting_lesson = Lesson("2", "Subject2", "Teacher2", "Group2", TIMESLOT1, ROOM1)
+    non_conflicting_lesson = Lesson("3", "Subject3", "Teacher3", "Group3", TIMESLOT2, ROOM1)
+    (constraint_verifier.verify_that(room_conflict)
+        .given(first_lesson, conflicting_lesson, non_conflicting_lesson)
+        .penalizes_by(1))
+----
+--
+====
+
+This test verifies that the constraint `TimetableConstraintProvider::roomConflict` penalizes with a match weight of `1`
 when given three lessons in the same room, where two lessons have the same timeslot.
 Therefore, a constraint weight of `10hard` would reduce the score by `-10hard`.
 
@@ -545,26 +1148,66 @@ if those constraint weights are hard coded in the `ConstraintProvider` - because
 constraints weights change regularly before going into production.
 This way, constraint weight tweaking does not break the unit tests.
 
-For more, see xref:constraint-streams/constraint-streams.adoc#constraintStreamsTesting[Testing Constraint Streams].
+For more, see xref:constraints-and-score/score-calculation.adoc#constraintStreamsTesting[Testing Constraint Streams].
 
 === Logging
 
 When adding constraints in your `ConstraintProvider`,
-keep an eye on the _score calculation speed_ in the `info` log,
+keep an eye on the _move evaluation speed_ in the `info` log,
 after solving for the same amount of time, to assess the performance impact:
 
 [source]
 ----
-... Solving ended: ..., score calculation speed (29455/sec), ...
+... Solving ended: ..., move evaluation speed (29455/sec), ...
 ----
 
-To understand how Timefold is solving your problem internally,
-change the logging in the `logback.xml` file:
+To understand how Timefold Solver is solving your problem internally:
+
+[tabs]
+====
+Java::
++
+--
+Change the logging in the `logback.xml` file:
 
 [source,xml]
 ----
   <logger name="ai.timefold.solver" level="debug"/>
 ----
+--
+
+Kotlin::
++
+--
+Change the logging in the `logback.xml` file:
+
+[source,xml]
+----
+  <logger name="ai.timefold.solver" level="debug"/>
+----
+--
+
+Python::
++
+--
+Change the logging in the `logging.conf` file:
+
+[source,text]
+----
+[logger_timefold_solver]
+level=DEBUG
+qualname=timefold.solver
+handlers=consoleHandler
+propagate=0
+
+[handler_consoleHandler]
+class=StreamHandler
+level=DEBUG
+formatter=simpleFormatter
+args=(sys.stdout,)
+----
+--
+====
 
 Use `debug` logging to show every _step_:
 
@@ -578,12 +1221,16 @@ Use `debug` logging to show every _step_:
 
 Use `trace` logging to show every _step_ and every _move_ per step.
 
+
 === Make a standalone application
 
 In order to run the application outside an IDE easily, you will need to make some changes to the configuration of your build tool.
 
-==== Executable JAR in Maven
-
+[tabs]
+====
+Maven::
++
+--
 In Maven, add the following to your `pom.xml`:
 
 [source,xml,options="nowrap"]
@@ -603,7 +1250,7 @@ In Maven, add the following to your `pom.xml`:
           </descriptors>
           <archive>
             <manifestEntries>
-              <Main-Class>org.acme.schooltimetabling.TimeTableApp</Main-Class>
+              <Main-Class>org.acme.schooltimetabling.TimetableApp</Main-Class>
               <Multi-Release>true</Multi-Release>
             </manifestEntries>
           </archive>
@@ -658,7 +1305,7 @@ This enables the https://maven.apache.org/plugins/maven-assembly-plugin/[Maven A
 * Take all dependencies of your project and put their classes and resources into a new JAR.
 ** If any of the dependencies use https://docs.oracle.com/javase/tutorial/ext/basics/spi.html[Java SPI], it properly bundles all the service descriptors.
 ** If any of the dependencies are https://openjdk.org/jeps/238[multi-release JARs], it takes that into account.
-* Set that JAR's main class to be `org.acme.schooltimetabling.TimeTableApp`.
+* Set that JAR's main class to be `org.acme.schooltimetabling.TimetableApp`.
 * Make that JAR available as `hello-world-run.jar` in your project's build directory, most likely `target/`.
 
 This executable JAR can be run like any other JAR:
@@ -669,27 +1316,62 @@ $ mvn clean install
 ...
 $ java -jar target/hello-world-run.jar
 ----
+--
 
-==== Executable application in Gradle
-
+Gradle::
++
+--
 In Gradle, add the following to your `build.gradle`:
 
 [source,gradle,options="nowrap"]
 ----
 application {
-    mainClass = "org.acme.schooltimetabling.TimeTableApp"
+    mainClass = "org.acme.schooltimetabling.TimetableApp"
 }
 ----
 
-After building the project, you can find an archive with a runnable application inside the `build/distributions/` directory.
+After building the project,
+you can find an archive with a runnable application inside the `build/libs/` directory.
+
+[source,options="nowrap"]
+----
+$ gradle build
+...
+$ java -jar build/libs/hello-world-1.0-SNAPSHOT.jar
+----
+--
+
+Python::
++
+--
+
+For Python, add the following to your `pyproject.toml`:
+
+[source,toml,options="nowrap"]
+----
+[project.scripts]
+run-app = "hello_world:main"
+----
+
+After installing the project,
+`run-app` will be available as an executable that can be run from the command line:
+
+[source,options="nowrap"]
+----
+$ pip install .
+...
+$ run-app
+----
+--
+====
+
 
 == Summary
 
 Congratulations!
-You have just developed a Java application with https://timefold.ai[Timefold]!
+You have just developed a Java, Python or Kotlin application with https://timefold.ai[Timefold]!
 
-If you ran into any issues,
-take a look at {hello-world-java-quickstart-url}[the quickstart source code].
+If you ran into any issues, take a look at {hello-world-java-quickstart-url}[the Java quickstart source code] or {hello-world-python-quickstart-url}[the Python quickstart source code].
 
 Read the next guide to build a pretty web application for school timetabling
 with a REST service and database integration, by leveraging Quarkus.

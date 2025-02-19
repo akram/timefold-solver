@@ -4,48 +4,61 @@ import java.util.Optional;
 
 import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType;
-import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.quarkus.config.SolverRuntimeConfig;
 
 import io.quarkus.runtime.annotations.ConfigGroup;
-import io.quarkus.runtime.annotations.ConfigItem;
 
 /**
  * During build time, this is translated into Timefold's {@link SolverConfig}
  * (except for termination properties which are translated at bootstrap time).
  *
- * See also {@link SolverRuntimeConfig}
+ * @see SolverRuntimeConfig
  */
 @ConfigGroup
-public class SolverBuildTimeConfig {
+public interface SolverBuildTimeConfig {
 
     /**
-     * Enable runtime assertions to detect common bugs in your implementation during development.
-     * Defaults to {@link EnvironmentMode#REPRODUCIBLE}.
+     * A classpath resource to read the specific solver configuration XML.
+     * If this property isn't specified, that solverConfig.xml is optional.
      */
-    @ConfigItem
-    public Optional<EnvironmentMode> environmentMode;
-
-    /**
-     * Enable daemon mode. In daemon mode, non-early termination pauses the solver instead of stopping it,
-     * until the next problem fact change arrives. This is often useful for real-time planning.
-     * Defaults to "false".
-     */
-    @ConfigItem
-    public Optional<Boolean> daemon;
+    // Build time - classes in the SolverConfig are visited by SolverConfig.visitReferencedClasses
+    // which generates the constructor of classes used by Quarkus
+    Optional<String> solverConfigXml();
 
     /**
      * Determines how to access the fields and methods of domain classes.
      * Defaults to {@link DomainAccessType#GIZMO}.
      */
-    @ConfigItem
-    public Optional<DomainAccessType> domainAccessType;
+    // Build time - GIZMO classes are only generated if at least one solver
+    // has domain access type GIZMO
+    Optional<DomainAccessType> domainAccessType();
+
+    /**
+     * Enable the Nearby Selection quick configuration.
+     */
+    // Build time - visited by SolverConfig.visitReferencedClasses
+    // which generates the constructor used by Quarkus
+    Optional<Class<?>> nearbyDistanceMeterClass();
 
     /**
      * What constraint stream implementation to use. Defaults to {@link ConstraintStreamImplType#BAVET}.
+     *
+     * @deprecated Not used anymore.
      */
-    @ConfigItem
-    public Optional<ConstraintStreamImplType> constraintStreamImplType;
+    @Deprecated(forRemoval = true, since = "1.4.0")
+    Optional<ConstraintStreamImplType> constraintStreamImplType();
 
+    /**
+     * Note: this setting is only available
+     * for <a href="https://timefold.ai/docs/timefold-solver/latest/enterprise-edition/enterprise-edition">Timefold Solver
+     * Enterprise Edition</a>.
+     * Enable rewriting the {@link ai.timefold.solver.core.api.score.stream.ConstraintProvider} class
+     * so nodes share lambdas when possible, improving performance.
+     * When enabled, breakpoints placed in the {@link ai.timefold.solver.core.api.score.stream.ConstraintProvider}
+     * will no longer be triggered.
+     * Defaults to "false".
+     */
+    // Build time - modifies the ConstraintProvider class if set
+    Optional<Boolean> constraintStreamAutomaticNodeSharing();
 }

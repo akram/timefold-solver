@@ -6,7 +6,7 @@
   <parent>
     <groupId>ai.timefold.solver</groupId>
     <artifactId>timefold-solver-persistence-parent</artifactId>
-    <version>0.9.39-SNAPSHOT</version>
+    <version>999-SNAPSHOT</version>
   </parent>
 
   <artifactId>timefold-solver-jackson</artifactId>
@@ -29,7 +29,7 @@
     <!-- Internal dependencies -->
     <dependency>
       <groupId>ai.timefold.solver</groupId>
-      <artifactId>timefold-solver-core-impl</artifactId>
+      <artifactId>timefold-solver-core</artifactId>
     </dependency>
     <dependency>
       <groupId>ai.timefold.solver</groupId>
@@ -37,7 +37,7 @@
     </dependency>
     <dependency>
       <groupId>ai.timefold.solver</groupId>
-      <artifactId>timefold-solver-core-impl</artifactId>
+      <artifactId>timefold-solver-core</artifactId>
       <type>test-jar</type>
       <scope>test</scope>
     </dependency>
@@ -52,6 +52,10 @@
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
@@ -73,11 +77,27 @@
       <artifactId>assertj-core</artifactId>
       <scope>test</scope>
     </dependency>
+
+    <!-- standardized nullness annotations  -->
     <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-annotations</artifactId>
-      <scope>test</scope>
+      <groupId>org.jspecify</groupId>
+      <artifactId>jspecify</artifactId>
     </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <configuration>
+          <ignoredNonTestScopedDependencies>
+            <!-- Uses Jackson annotations in Javadoc. -->
+            <dependency>com.fasterxml.jackson.core:jackson-annotations:jar</dependency>
+          </ignoredNonTestScopedDependencies>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
 
 </project>

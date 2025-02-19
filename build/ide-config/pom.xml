@@ -5,7 +5,7 @@
   <parent>
     <groupId>ai.timefold.solver</groupId>
     <artifactId>timefold-solver-parent</artifactId>
-    <version>0.9.39-SNAPSHOT</version>
+    <version>999-SNAPSHOT</version>
     <relativePath>../../pom.xml</relativePath>
   </parent>
   <artifactId>timefold-solver-ide-config</artifactId>
@@ -19,4 +19,9 @@
     source code.
   </description>
   <url>https://timefold.ai</url>
+
+  <properties>
+    <java.module.name>ai.timefold.solver.ide.config</java.module.name>
+  </properties>
+
 </project>

@@ -1,0 +1,109 @@
+[
+  {
+    "extension": "revapi.differences",
+    "configuration": {
+      "differences": [
+        {
+          "ignore": true,
+          "code": "java.annotation.attributeValueChanged",
+          "old": "class ai.timefold.solver.core.config.solver.SolverConfig",
+          "new": "class ai.timefold.solver.core.config.solver.SolverConfig",
+          "annotationType": "jakarta.xml.bind.annotation.XmlType",
+          "attribute": "propOrder",
+          "oldValue": "{\"environmentMode\", \"daemon\", \"randomType\", \"randomSeed\", \"randomFactoryClass\", \"moveThreadCount\", \"moveThreadBufferSize\", \"threadFactoryClass\", \"monitoringConfig\", \"solutionClass\", \"entityClassList\", \"domainAccessType\", \"scoreDirectorFactoryConfig\", \"terminationConfig\", \"phaseConfigList\"}",
+          "newValue": "{\"environmentMode\", \"daemon\", \"randomType\", \"randomSeed\", \"randomFactoryClass\", \"moveThreadCount\", \"moveThreadBufferSize\", \"threadFactoryClass\", \"monitoringConfig\", \"solutionClass\", \"entityClassList\", \"domainAccessType\", \"scoreDirectorFactoryConfig\", \"terminationConfig\", \"nearbyDistanceMeterClass\", \"phaseConfigList\"}",
+          "justification": "Adding new Nearby root property"
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.attributeValueChanged",
+          "old": "class ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig",
+          "new": "class ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig",
+          "annotationType": "jakarta.xml.bind.annotation.XmlType",
+          "attribute": "propOrder",
+          "oldValue": "{\"easyScoreCalculatorClass\", \"easyScoreCalculatorCustomProperties\", \"constraintProviderClass\", \"constraintProviderCustomProperties\", \"constraintStreamImplType\", \"incrementalScoreCalculatorClass\", \"incrementalScoreCalculatorCustomProperties\", \"scoreDrlList\", \"initializingScoreTrend\", \"assertionScoreDirectorFactory\"}",
+          "newValue": "{\"easyScoreCalculatorClass\", \"easyScoreCalculatorCustomProperties\", \"constraintProviderClass\", \"constraintProviderCustomProperties\", \"constraintStreamImplType\", \"constraintStreamAutomaticNodeSharing\", \"incrementalScoreCalculatorClass\", \"incrementalScoreCalculatorCustomProperties\", \"scoreDrlList\", \"initializingScoreTrend\", \"assertionScoreDirectorFactory\"}",
+          "justification": "Add support for automatic constraint stream node sharing outside of Quarkus for Timefold Solver Enterprise edition users."
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.attributeValueChanged",
+          "old": "class ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_ extends ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_>>",
+          "new": "class ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_ extends ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_>>",
+          "annotationType": "jakarta.xml.bind.annotation.XmlSeeAlso",
+          "attribute": "value",
+          "oldValue": "{ai.timefold.solver.core.config.heuristic.selector.move.composite.CartesianProductMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt.KOptListMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListSwapMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.factory.MoveIteratorFactoryConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.factory.MoveListFactoryConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarChangeMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarSwapMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.SubChainChangeMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.SubChainSwapMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubListChangeMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubListSwapMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.TailChainSwapMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig.class}",
+          "newValue": "{ai.timefold.solver.core.config.heuristic.selector.move.composite.CartesianProductMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt.KOptListMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListSwapMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.factory.MoveIteratorFactoryConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.factory.MoveListFactoryConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarChangeMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarSwapMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.RuinRecreateMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.SubChainChangeMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.SubChainSwapMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubListChangeMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubListSwapMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.TailChainSwapMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig.class}",
+          "justification": "Add support for ruin moves"
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.attributeValueChanged",
+          "old": "class ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_ extends ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_>>",
+          "new": "class ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_ extends ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_>>",
+          "annotationType": "jakarta.xml.bind.annotation.XmlSeeAlso",
+          "attribute": "value",
+          "oldValue": "{ai.timefold.solver.core.config.heuristic.selector.move.composite.CartesianProductMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt.KOptListMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListSwapMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.factory.MoveIteratorFactoryConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.factory.MoveListFactoryConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarChangeMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarSwapMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.SubChainChangeMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.SubChainSwapMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubListChangeMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubListSwapMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.TailChainSwapMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig.class}",
+          "newValue": "{ai.timefold.solver.core.config.heuristic.selector.move.composite.CartesianProductMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt.KOptListMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListSwapMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.factory.MoveIteratorFactoryConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.factory.MoveListFactoryConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarChangeMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarSwapMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.RuinRecreateMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListRuinRecreateMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.SubChainChangeMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.SubChainSwapMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubListChangeMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubListSwapMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.TailChainSwapMoveSelectorConfig.class, ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig.class}",
+          "justification": "Add support for list ruin moves"
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.attributeValueChanged",
+          "old": "class ai.timefold.solver.core.config.solver.termination.TerminationConfig",
+          "new": "class ai.timefold.solver.core.config.solver.termination.TerminationConfig",
+          "annotationType": "jakarta.xml.bind.annotation.XmlType",
+          "attribute": "propOrder",
+          "oldValue": "{\"terminationClass\", \"terminationCompositionStyle\", \"spentLimit\", \"millisecondsSpentLimit\", \"secondsSpentLimit\", \"minutesSpentLimit\", \"hoursSpentLimit\", \"daysSpentLimit\", \"unimprovedSpentLimit\", \"unimprovedMillisecondsSpentLimit\", \"unimprovedSecondsSpentLimit\", \"unimprovedMinutesSpentLimit\", \"unimprovedHoursSpentLimit\", \"unimprovedDaysSpentLimit\", \"unimprovedScoreDifferenceThreshold\", \"bestScoreLimit\", \"bestScoreFeasible\", \"stepCountLimit\", \"unimprovedStepCountLimit\", \"scoreCalculationCountLimit\", \"terminationConfigList\"}",
+          "newValue": "{\"terminationClass\", \"terminationCompositionStyle\", \"spentLimit\", \"millisecondsSpentLimit\", \"secondsSpentLimit\", \"minutesSpentLimit\", \"hoursSpentLimit\", \"daysSpentLimit\", \"unimprovedSpentLimit\", \"unimprovedMillisecondsSpentLimit\", \"unimprovedSecondsSpentLimit\", \"unimprovedMinutesSpentLimit\", \"unimprovedHoursSpentLimit\", \"unimprovedDaysSpentLimit\", \"unimprovedScoreDifferenceThreshold\", \"bestScoreLimit\", \"bestScoreFeasible\", \"stepCountLimit\", \"unimprovedStepCountLimit\", \"scoreCalculationCountLimit\", \"moveCountLimit\", \"terminationConfigList\"}",
+          "justification": "Add new termination configuration"
+        },
+        {
+          "ignore": true,
+          "code": "java.method.parameterTypeParameterChanged",
+          "old": "parameter <Temporal_ extends java.time.temporal.Temporal & java.lang.Comparable<? super Temporal_>> ai.timefold.solver.core.api.domain.valuerange.CountableValueRange<Temporal_> ai.timefold.solver.core.api.domain.valuerange.ValueRangeFactory::createTemporalValueRange(===Temporal_===, Temporal_, long, java.time.temporal.TemporalUnit)",
+          "new": "parameter <Temporal_ extends java.time.temporal.Temporal & java.lang.Comparable<? super Temporal_>> ai.timefold.solver.core.api.domain.valuerange.CountableValueRange<Temporal_> ai.timefold.solver.core.api.domain.valuerange.ValueRangeFactory::createTemporalValueRange(===Temporal_===, Temporal_, long, java.time.temporal.TemporalUnit)",
+          "parameterIndex": "0",
+          "justification": "False positive after addition of @NonNull annotation"
+        },
+        {
+          "ignore": true,
+          "code": "java.method.parameterTypeParameterChanged",
+          "old": "parameter <Temporal_ extends java.time.temporal.Temporal & java.lang.Comparable<? super Temporal_>> ai.timefold.solver.core.api.domain.valuerange.CountableValueRange<Temporal_> ai.timefold.solver.core.api.domain.valuerange.ValueRangeFactory::createTemporalValueRange(Temporal_, ===Temporal_===, long, java.time.temporal.TemporalUnit)",
+          "new": "parameter <Temporal_ extends java.time.temporal.Temporal & java.lang.Comparable<? super Temporal_>> ai.timefold.solver.core.api.domain.valuerange.CountableValueRange<Temporal_> ai.timefold.solver.core.api.domain.valuerange.ValueRangeFactory::createTemporalValueRange(Temporal_, ===Temporal_===, long, java.time.temporal.TemporalUnit)",
+          "parameterIndex": "1",
+          "justification": "False positive after addition of @NonNull annotation"
+        },
+        {
+          "ignore": true,
+          "code": "java.method.returnTypeTypeParametersChanged",
+          "old": "method Score_ ai.timefold.solver.core.api.score.constraint.ConstraintMatch<Score_ extends ai.timefold.solver.core.api.score.Score<Score_>>::getScore()",
+          "new": "method Score_ ai.timefold.solver.core.api.score.constraint.ConstraintMatch<Score_ extends ai.timefold.solver.core.api.score.Score<Score_>>::getScore()",
+          "justification": "False positive after addition of @NonNull annotation"
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.attributeValueChanged",
+          "old": "class ai.timefold.solver.core.config.solver.SolverConfig",
+          "new": "class ai.timefold.solver.core.config.solver.SolverConfig",
+          "annotationType": "jakarta.xml.bind.annotation.XmlType",
+          "attribute": "propOrder",
+          "oldValue": "{\"environmentMode\", \"daemon\", \"randomType\", \"randomSeed\", \"randomFactoryClass\", \"moveThreadCount\", \"moveThreadBufferSize\", \"threadFactoryClass\", \"monitoringConfig\", \"solutionClass\", \"entityClassList\", \"domainAccessType\", \"scoreDirectorFactoryConfig\", \"terminationConfig\", \"phaseConfigList\"}",
+          "newValue": "{\"enablePreviewFeatureSet\", \"environmentMode\", \"daemon\", \"randomType\", \"randomSeed\", \"randomFactoryClass\", \"moveThreadCount\", \"moveThreadBufferSize\", \"threadFactoryClass\", \"monitoringConfig\", \"solutionClass\", \"entityClassList\", \"domainAccessType\", \"scoreDirectorFactoryConfig\", \"terminationConfig\", \"nearbyDistanceMeterClass\", \"phaseConfigList\"}",
+          "justification": "Enable features preview config"
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.attributeValueChanged",
+          "old": "class ai.timefold.solver.core.config.solver.termination.TerminationConfig",
+          "new": "class ai.timefold.solver.core.config.solver.termination.TerminationConfig",
+          "annotationType": "jakarta.xml.bind.annotation.XmlType",
+          "attribute": "propOrder",
+          "oldValue": "{\"terminationClass\", \"terminationCompositionStyle\", \"spentLimit\", \"millisecondsSpentLimit\", \"secondsSpentLimit\", \"minutesSpentLimit\", \"hoursSpentLimit\", \"daysSpentLimit\", \"unimprovedSpentLimit\", \"unimprovedMillisecondsSpentLimit\", \"unimprovedSecondsSpentLimit\", \"unimprovedMinutesSpentLimit\", \"unimprovedHoursSpentLimit\", \"unimprovedDaysSpentLimit\", \"unimprovedScoreDifferenceThreshold\", \"bestScoreLimit\", \"bestScoreFeasible\", \"stepCountLimit\", \"unimprovedStepCountLimit\", \"scoreCalculationCountLimit\", \"terminationConfigList\"}",
+          "newValue": "{\"terminationClass\", \"terminationCompositionStyle\", \"diminishedReturnsConfig\", \"spentLimit\", \"millisecondsSpentLimit\", \"secondsSpentLimit\", \"minutesSpentLimit\", \"hoursSpentLimit\", \"daysSpentLimit\", \"unimprovedSpentLimit\", \"unimprovedMillisecondsSpentLimit\", \"unimprovedSecondsSpentLimit\", \"unimprovedMinutesSpentLimit\", \"unimprovedHoursSpentLimit\", \"unimprovedDaysSpentLimit\", \"unimprovedScoreDifferenceThreshold\", \"bestScoreLimit\", \"bestScoreFeasible\", \"stepCountLimit\", \"unimprovedStepCountLimit\", \"scoreCalculationCountLimit\", \"moveCountLimit\", \"terminationConfigList\"}",
+          "justification": "Added support for the new diminished returns termination type"
+        }
+      ]
+    }
+  }
+]

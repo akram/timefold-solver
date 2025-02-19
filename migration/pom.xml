@@ -6,7 +6,7 @@
   <parent>
     <groupId>ai.timefold.solver</groupId>
     <artifactId>timefold-solver-build-parent</artifactId>
-    <version>0.9.39-SNAPSHOT</version>
+    <version>999-SNAPSHOT</version>
     <relativePath>../build/build-parent/pom.xml</relativePath>
   </parent>
 
@@ -21,31 +21,14 @@
 
   <properties>
     <java.module.name>ai.timefold.solver.migration</java.module.name>
-    <version.org.antlr>4.11.1</version.org.antlr>
-    <version.jakarta.xml.bind.override>2.3.3</version.jakarta.xml.bind.override>
   </properties>
 
   <dependencyManagement>
     <dependencies>
-      <!--
-        Only remove the override once certain that the version is compatible with both Quarkus and Quarkus LTS.
-        Keep the override up to date with OpenRewrite.
-      -->
-      <dependency>
-        <groupId>org.antlr</groupId>
-        <artifactId>antlr4</artifactId>
-        <version>${version.org.antlr}</version>
-      </dependency>
       <dependency>
         <groupId>org.antlr</groupId>
         <artifactId>antlr4-runtime</artifactId>
-        <version>${version.org.antlr}</version>
-      </dependency>
-      <!-- openrewrite-maven transitively depends on jakarta.xml.bind-api with the javax package. -->
-      <dependency>
-        <groupId>jakarta.xml.bind</groupId>
-        <artifactId>jakarta.xml.bind-api</artifactId>
-        <version>${version.jakarta.xml.bind.override}</version>
+        <version>4.11.1</version> <!-- Otherwise Openrewrite complains and occasionally fails. -->
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -74,7 +57,12 @@
     </dependency>
     <dependency>
       <groupId>org.openrewrite</groupId>
-      <artifactId>rewrite-java-11</artifactId>
+      <artifactId>rewrite-java-17</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.openrewrite</groupId> <!-- Does not break Java 17 compatibility. -->
+      <artifactId>rewrite-java-21</artifactId>
       <scope>runtime</scope>
     </dependency>
     <dependency>
@@ -93,26 +81,25 @@
       <groupId>org.openrewrite</groupId>
       <artifactId>rewrite-test</artifactId>
       <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>commons-logging</groupId>
-          <artifactId>commons-logging</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>jcl-over-slf4j</artifactId>
-      <scope>runtime</scope>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>ai.timefold.solver</groupId>
+      <artifactId>timefold-solver-test</artifactId>
+      <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>ai.timefold.solver</groupId>
-      <artifactId>timefold-solver-core-impl</artifactId>
+      <artifactId>timefold-solver-core</artifactId>
       <scope>runtime</scope>
     </dependency>
   </dependencies>

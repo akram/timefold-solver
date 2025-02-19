@@ -6,7 +6,7 @@
   <parent>
     <groupId>ai.timefold.solver</groupId>
     <artifactId>timefold-solver-parent</artifactId>
-    <version>0.9.39-SNAPSHOT</version>
+    <version>999-SNAPSHOT</version>
     <relativePath>../../pom.xml</relativePath>
   </parent>
 
@@ -14,69 +14,60 @@
   <packaging>pom</packaging>
 
   <name>Timefold Solver build parent</name>
+  <url>https://timefold.ai</url>
 
   <properties>
     <!-- ************************************************************************ -->
     <!-- Dependencies -->
     <!-- ************************************************************************ -->
-    <version.ch.qos.logback>1.4.6</version.ch.qos.logback>
-    <version.org.apache.logging.log4j>2.20.0</version.org.apache.logging.log4j>
-    <version.io.quarkus>3.0.3.Final</version.io.quarkus>
+    <version.ch.qos.logback>1.5.16</version.ch.qos.logback>
+    <version.io.quarkus>3.18.3</version.io.quarkus>
     <version.org.apache.commons.math3>3.6.1</version.org.apache.commons.math3>
-    <version.org.apache.commons.text>1.10.0</version.org.apache.commons.text>
-    <version.org.apache.poi>5.2.3</version.org.apache.poi>
-    <version.org.assertj>3.24.2</version.org.assertj>
-    <version.org.freemarker>2.3.32</version.org.freemarker>
-    <version.org.jdom2>2.0.6.1</version.org.jdom2>
-    <version.org.jfree.jfreechart>1.5.4</version.org.jfree.jfreechart>
-    <version.org.openrewrite.recipe>1.19.3</version.org.openrewrite.recipe>
-    <version.org.slf4j>2.0.6</version.org.slf4j><!-- TODO keep in sync with quarkus-bom -->
-    <version.org.springframework>6.0.8</version.org.springframework>
-    <version.org.springframework.boot>3.0.6</version.org.springframework.boot>
+    <version.org.apache.logging.log4j>2.24.3</version.org.apache.logging.log4j>
+    <version.org.assertj>3.27.3</version.org.assertj>
+    <version.org.freemarker>2.3.34</version.org.freemarker>
+    <version.org.jspecify>1.0.0</version.org.jspecify>
+    <version.org.openrewrite.recipe>3.2.0</version.org.openrewrite.recipe>
+    <version.org.springframework.boot>3.4.2</version.org.springframework.boot>
+    <version.ow2.asm>9.7.1</version.ow2.asm>
 
     <!-- ************************************************************************ -->
     <!-- Plugins -->
     <!-- ************************************************************************ -->
-    <version.asciidoctor.plugin>2.2.3</version.asciidoctor.plugin>
-    <version.assembly.plugin>3.4.2</version.assembly.plugin>
-    <!-- jboss suffixed version from jboss-parent which cannot be downloaded due to SNAPSHOT only policy for plugins from JBoss -->
-    <version.compiler.plugin>3.8.1</version.compiler.plugin>
-    <version.dependency.plugin>3.5.0</version.dependency.plugin>
-    <version.formatter.plugin>2.22.0</version.formatter.plugin>
-    <version.impsort.plugin>1.8.0</version.impsort.plugin>
-    <version.jacoco.plugin>0.8.10</version.jacoco.plugin>
-    <!--
-      Do not upgrade unless prepared to deal with JPMS issues.
-      If upgrading, ensure build still passes with the full profile (-Dfull).
-    -->
-    <version.javadoc.plugin>3.5.0</version.javadoc.plugin>
-    <version.jaxb2.plugin>3.1.0</version.jaxb2.plugin>
-    <version.pitest.plugin>1.12.0</version.pitest.plugin>
+    <version.antrun.plugin>3.1.0</version.antrun.plugin>
+    <version.asciidoctor.plugin>3.1.1</version.asciidoctor.plugin>
+    <version.assembly.plugin>3.7.1</version.assembly.plugin>
+    <version.compiler.plugin>3.13.0</version.compiler.plugin>
+    <version.dependency.plugin>3.8.1</version.dependency.plugin>
+    <version.exec.plugin>3.5.0</version.exec.plugin>
+    <version.enforcer.plugin>3.5.0</version.enforcer.plugin>
+    <version.jacoco.plugin>0.8.12</version.jacoco.plugin>
+    <version.jar.plugin>3.4.2</version.jar.plugin>
+    <version.jaxb2.plugin>3.2.0</version.jaxb2.plugin>
     <version.revapi.plugin>0.15.0</version.revapi.plugin>
-    <version.sniffer.plugin>1.23</version.sniffer.plugin>
-    <version.surefire.plugin>3.0.0-M8</version.surefire.plugin>
-    <version.versions.plugin>2.15.0</version.versions.plugin>
+    <version.sonar.plugin>5.0.0.4389</version.sonar.plugin>
+    <version.spotless.plugin>2.44.2</version.spotless.plugin>
+    <version.surefire.plugin>3.5.2</version.surefire.plugin>
+    <version.versions.plugin>2.18.0</version.versions.plugin>
 
     <!-- Plugin configuration properties -->
-    <maven.min.version>3.8.1</maven.min.version>
+    <maven.min.version>3.9.2</maven.min.version>
     <maven.compiler.release>17</maven.compiler.release>
-    <!-- A workaround for https://youtrack.jetbrains.com/issue/IDEA-276403. -->
-    <maven.compiler.target>17</maven.compiler.target>
     <!-- This property needs to be defined in all modules that use the packaging 'jar'.
          It is used by different plugins to make sure the module/bundle names are consistent. -->
     <java.module.name/>
-    <formatter.skip>false</formatter.skip>
-    <formatter.goal>format</formatter.goal>
-    <!-- TODO name impsort should indicate it's related to formatting -->
-    <impsort.goal>sort</impsort.goal>
+    <spotless.skip>false</spotless.skip>
+    <spotless.goal>apply</spotless.goal>
     <!-- JaCoCo coverage data file location -->
     <jacoco.exec.file>${project.root.dir}/target/jacoco.exec</jacoco.exec.file>
     <jacoco.agent.argLine/>
     <enforcer.failOnDuplicatedClasses>true</enforcer.failOnDuplicatedClasses>
     <!-- Latest release to be used by api-compatibility-check to check backwards compatibility of the API. -->
-    <revapi.oldTimefoldVersion>8.29.0.Final</revapi.oldTimefoldVersion>
+    <revapi.oldTimefoldVersion>0.9.38</revapi.oldTimefoldVersion>
     <!--suppress UnresolvedMavenProperty-->
     <project.root.dir>${maven.multiModuleProjectDirectory}</project.root.dir>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
     <schema.filename.benchmark>benchmark-with-import.xsd</schema.filename.benchmark>
     <schema.filename.solver>solver.xsd</schema.filename.solver>
@@ -135,6 +126,28 @@
         <artifactId>jfreechart</artifactId>
         <version>${version.org.jfree.jfreechart}</version>
       </dependency>
+      <dependency>
+        <groupId>org.jspecify</groupId>
+        <artifactId>jspecify</artifactId>
+        <version>${version.org.jspecify}</version>
+      </dependency>
+
+      <!-- ASM -->
+      <dependency>
+        <groupId>org.ow2.asm</groupId>
+        <artifactId>asm</artifactId>
+        <version>${version.ow2.asm}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.ow2.asm</groupId>
+        <artifactId>asm-util</artifactId>
+        <version>${version.ow2.asm}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.ow2.asm</groupId>
+        <artifactId>asm-tree</artifactId>
+        <version>${version.ow2.asm}</version>
+      </dependency>
 
       <!-- OpenRewrite -->
       <dependency>
@@ -144,11 +157,6 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
-      <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>jcl-over-slf4j</artifactId>
-        <version>${version.org.slf4j}</version>
-      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -156,24 +164,27 @@
     <pluginManagement>
       <plugins>
         <plugin>
+          <artifactId>maven-antrun-plugin</artifactId>
+          <version>${version.antrun.plugin}</version>
+        </plugin>
+        <plugin>
           <groupId>io.quarkus</groupId>
           <artifactId>quarkus-maven-plugin</artifactId>
           <version>${version.io.quarkus}</version>
         </plugin>
         <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>${version.dependency.plugin}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>exec-maven-plugin</artifactId>
+          <version>${version.exec.plugin}</version>
+        </plugin>
+        <plugin>
           <artifactId>maven-enforcer-plugin</artifactId>
+          <version>${version.enforcer.plugin}</version>
           <dependencies>
-            <dependency>
-              <groupId>org.ow2.asm</groupId>
-              <artifactId>asm-analysis</artifactId>
-              <version>9.5</version>
-            </dependency>
-            <dependency>
-              <groupId>com.redhat.victims</groupId>
-              <artifactId>enforce-victims-rule</artifactId>
-              <version>1.3.4</version>
-            </dependency>
             <dependency>
               <groupId>org.commonjava.maven.enforcer</groupId>
               <artifactId>enforce-managed-deps-rule</artifactId>
@@ -182,7 +193,7 @@
             <dependency>
               <groupId>org.codehaus.mojo</groupId>
               <artifactId>extra-enforcer-rules</artifactId>
-              <version>1.0</version>
+              <version>1.9.0</version>
             </dependency>
           </dependencies>
           <executions>
@@ -242,8 +253,6 @@
             </execution>
             <execution>
               <id>ban-duplicated-classes</id>
-              <!-- Currently disabled as it fails the build. See https://issues.redhat.com/browse/PLANNER-2261. -->
-              <phase>none</phase>
               <goals>
                 <goal>enforce</goal>
               </goals>
@@ -251,17 +260,6 @@
                 <rules>
                   <banDuplicateClasses>
                     <ignoreClasses>
-                      <!-- Bundled by both com.sun:tools and com.sun.xml.bind:jaxb-xjc. No easy way to exclude one of them. -->
-                      <ignoreClass>org.relaxng.datatype.*</ignoreClass>
-                      <!-- Duplicated in xml-apis:xml-apis:jar:1.4.01 and xerces:xercesImpl:jar:2.11.0.SP4. The class is identical
-                           and there is very little chance this will get ever fixed. -->
-                      <ignoreClass>org.w3c.dom.ElementTraversal</ignoreClass>
-                      <ignoreClass>org.w3c.dom.UserDataHandler</ignoreClass>
-                      <!-- Classes in javax.annotation package are just marker annotations used to aid the programmers.
-                           These annotations do not influence the actual behavior of the code, so it's reasonable to
-                           ignore them. Following dependencies contain these classes: 'com.google.code.findbugs:jsr305'
-                           and 'com.google.code.findbugs:annotations'. -->
-                      <ignoreClass>javax.annotation.*</ignoreClass>
                       <!-- ignoring java 9 compatible class for modules -->
                       <ignoreClass>module-info</ignoreClass>
                       <!-- ignoring multirelease jar classes -->
@@ -277,7 +275,12 @@
                         </ignoreClasses>
                       </dependency>
                     </dependencies>
+                    <scopes>
+                      <scope>compile</scope>
+                      <scope>provided</scope>
+                    </scopes>
                     <findAllDuplicates>true</findAllDuplicates>
+                    <ignoreWhenIdentical>true</ignoreWhenIdentical>
                   </banDuplicateClasses>
                 </rules>
                 <fail>${enforcer.failOnDuplicatedClasses}</fail>
@@ -315,17 +318,10 @@
             <newArtifacts>
               <artifact>${project.groupId}:${project.artifactId}:${project.version}</artifact>
             </newArtifacts>
-            <!-- By default revapi will check the oldArtifact against the currently executed build -->
             <analysisConfigurationFiles>
-              <configurationFile>
-                <path>src/build/revapi-config.json</path>
-                <roots>
-                  <root>filters</root>
-                  <root>ignores</root>
-                </roots>
-              </configurationFile>
+              <file>${project.basedir}/src/build/revapi-filter.json</file>
+              <file>${project.basedir}/src/build/revapi-differences.json</file>
             </analysisConfigurationFiles>
-            <failSeverity>potentiallyBreaking</failSeverity>
           </configuration>
           <executions>
             <execution>
@@ -337,17 +333,10 @@
           </executions>
         </plugin>
 
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-resources-plugin</artifactId>
-          <configuration>
-            <encoding>UTF-8</encoding>
-          </configuration>
-        </plugin>
         <!-- Packaging -->
         <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-jar-plugin</artifactId>
+          <version>${version.jar.plugin}</version>
           <executions>
             <execution>
               <id>default-jar</id>
@@ -388,7 +377,6 @@
           </configuration>
         </plugin>
         <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-source-plugin</artifactId>
           <configuration>
             <excludes>
@@ -407,7 +395,7 @@
               <!-- Required to generate the PDF file -->
               <groupId>org.asciidoctor</groupId>
               <artifactId>asciidoctorj-pdf</artifactId>
-              <version>2.3.7</version>
+              <version>2.3.19</version>
             </dependency>
           </dependencies>
         </plugin>
@@ -417,23 +405,13 @@
           <version>${version.versions.plugin}</version>
         </plugin>
         <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-javadoc-plugin</artifactId>
-          <version>${version.javadoc.plugin}</version>
-          <configuration>
-            <author>false</author>
-            <failOnError>true</failOnError>
-            <failOnWarnings>true</failOnWarnings>
-            <!-- Override JBoss parent otherwise it fails on JDK 16+ -->
-            <header combine.self="override" />
-            <footer combine.self="override" />
-            <quiet>true</quiet>
-          </configuration>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
+          <version>${version.compiler.plugin}</version>
           <configuration>
+            <release>${maven.compiler.release}</release>
+            <source>${maven.compiler.release}</source>
+            <target>${maven.compiler.release}</target>
+            <encoding>${project.build.sourceEncoding}</encoding>
             <compilerArgs>
               <!-- Visit https://docs.oracle.com/javase/8/docs/technotes/tools/windows/javac.html
                    to learn more about javac warnings -->
@@ -470,9 +448,9 @@
           </executions>
         </plugin>
         <plugin>
-          <groupId>net.revelc.code.formatter</groupId>
-          <artifactId>formatter-maven-plugin</artifactId>
-          <version>${version.formatter.plugin}</version>
+          <groupId>com.diffplug.spotless</groupId>
+          <artifactId>spotless-maven-plugin</artifactId>
+          <version>${version.spotless.plugin}</version>
           <dependencies>
             <dependency>
               <groupId>ai.timefold.solver</groupId>
@@ -480,35 +458,31 @@
               <version>${project.version}</version>
             </dependency>
           </dependencies>
-          <configuration>
-            <configFile>eclipse-format.xml</configFile>
-            <lineEnding>LF</lineEnding>
-            <skip>${formatter.skip}</skip>
-          </configuration>
           <executions>
             <execution>
+              <id>spotless-formatting</id>
+              <phase>compile</phase>
               <goals>
-                <goal>${formatter.goal}</goal>
+                <goal>${spotless.goal}</goal>
               </goals>
-            </execution>
-          </executions>
-        </plugin>
-        <plugin>
-          <groupId>net.revelc.code</groupId>
-          <artifactId>impsort-maven-plugin</artifactId>
-          <version>${version.impsort.plugin}</version>
-          <configuration>
-            <groups>java.,jakarta.,javax.,ai.timefold.solver.,org.,com.</groups>
-            <staticGroups>*</staticGroups>
-            <!-- keep in sync with the formatter-maven-plugin -->
-            <skip>${formatter.skip}</skip>
-            <removeUnused>true</removeUnused>
-          </configuration>
-          <executions>
-            <execution>
-              <goals>
-                <goal>${impsort.goal}</goal>
-              </goals>
+              <configuration>
+                <skip>${spotless.skip}</skip>
+                <java>
+                  <eclipse>
+                    <file>eclipse-format.xml</file>
+                  </eclipse>
+                  <importOrder>
+                    <file>eclipse.importorder</file>
+                  </importOrder>
+                  <removeUnusedImports/>
+                  <replaceRegex> <!-- Wildcard imports will break the build. -->
+                    <name>Remove wildcard imports</name>
+                    <searchRegex>import\s+[^\*\s]+\*;(\r\n|\r|\n)</searchRegex>
+                    <replacement>$1</replacement>
+                  </replaceRegex>
+                </java>
+                <pom />
+              </configuration>
             </execution>
           </executions>
         </plugin>
@@ -541,63 +515,36 @@
           </configuration>
         </plugin>
         <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>animal-sniffer-maven-plugin</artifactId>
-          <version>${version.sniffer.plugin}</version>
-          <configuration>
-            <signature>
-              <groupId>net.sf.androidscents.signature</groupId>
-              <artifactId>android-api-level-32</artifactId>
-              <version>12_r1</version>
-            </signature>
-            <ignores>
-              <ignore>java.lang.invoke.LambdaMetafactory</ignore>
-              <ignore>java.lang.invoke.MethodHandle</ignore>
-            </ignores>
-          </configuration>
-          <executions>
-            <execution>
-              <id>animal-sniffer</id>
-              <phase>verify</phase>
-              <goals>
-                <goal>check</goal>
-              </goals>
-            </execution>
-          </executions>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-assembly-plugin</artifactId>
           <version>${version.assembly.plugin}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.sonarsource.scanner.maven</groupId>
+          <artifactId>sonar-maven-plugin</artifactId>
+          <version>${version.sonar.plugin}</version>
         </plugin>
       </plugins>
     </pluginManagement>
     <plugins>
       <plugin>
-        <groupId>net.revelc.code.formatter</groupId>
-        <artifactId>formatter-maven-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <groupId>net.revelc.code</groupId>
-        <artifactId>impsort-maven-plugin</artifactId>
+        <groupId>com.diffplug.spotless</groupId>
+        <artifactId>spotless-maven-plugin</artifactId>
       </plugin>
       <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${version.surefire.plugin}</version>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
         <version>${version.surefire.plugin}</version>
       </plugin>
       <!-- Do not move to full profile. Otherwise upstream dependency changes can break our build without CI catching it. -->
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
+        <version>${version.dependency.plugin}</version>
         <executions>
           <execution>
             <id>analyze-only</id>
@@ -623,7 +570,6 @@
         <pluginManagement>
           <plugins>
             <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
               <artifactId>maven-surefire-plugin</artifactId>
               <configuration>
                 <!-- Append jacoco.agent.argLine property populated by JaCoCo's prepare-agent goal. -->
@@ -650,64 +596,8 @@
         </property>
       </activation>
       <properties>
-        <formatter.goal>validate</formatter.goal>
-        <impsort.goal>check</impsort.goal>
+        <spotless.goal>check</spotless.goal>
       </properties>
-    </profile>
-    <profile>
-      <!-- Mutation coverage disabled by default (use -Dmutation-coverage to activate it) -->
-      <id>mutation-coverage</id>
-      <activation>
-        <property>
-          <name>mutation-coverage</name>
-        </property>
-      </activation>
-      <build>
-        <pluginManagement>
-          <plugins>
-            <plugin>
-              <groupId>org.pitest</groupId>
-              <artifactId>pitest-maven</artifactId>
-              <version>${version.pitest.plugin}</version>
-            </plugin>
-          </plugins>
-        </pluginManagement>
-        <plugins>
-          <plugin>
-            <groupId>org.pitest</groupId>
-            <artifactId>pitest-maven</artifactId>
-            <executions>
-              <execution>
-                <id>default-pitest</id>
-                <phase>verify</phase>
-                <goals>
-                  <goal>mutationCoverage</goal>
-                </goals>
-                <configuration>
-                  <reportsDirectory>local/pit-reports</reportsDirectory>
-                  <timestampedReports>true</timestampedReports>
-                  <timeoutConstant>1000</timeoutConstant>
-                  <mutators>
-                    <!--
-                    <mutator>CONDITIONALS_BOUNDARY</mutator>
-                    <mutator>NEGATE_CONDITIONALS</mutator>
-                    <mutator>MATH</mutator>
-                    <mutator>INCREMENTS</mutator>
-                    <mutator>INVERT_NEGS</mutator>
-                    <mutator>RETURN_VALS</mutator>
-                    <mutator>VOID_METHOD_CALLS</mutator>
-                    -->
-                    <mutator>DEFAULTS</mutator>
-                    <mutator>NON_VOID_METHOD_CALLS</mutator>
-                    <mutator>REMOVE_CONDITIONALS</mutator>
-                  </mutators>
-                  <avoidCallsTo>java.lang.StringBuilder</avoidCallsTo>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
     </profile>
     <!--
       Creates JaCoCo XML reports and invokes the Sonar scanner, which uploads code quality data into the SonarCloud.
@@ -716,14 +606,13 @@
       <id>sonarcloud-analysis</id>
       <properties>
         <sonar.coverage.jacoco.xmlReportPaths>${project.reporting.outputDirectory}/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
-        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
-        <sonar.organization>timefold</sonar.organization>
         <sonar.java.source>${maven.compiler.release}</sonar.java.source>
+        <!-- Go to target/classes to avoid SonarCloud complaining about generated Java source code. -->
+        <sonar.java.binaries>${project.build.outputDirectory}</sonar.java.binaries>
       </properties>
       <build>
         <plugins>
           <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-antrun-plugin</artifactId>
             <executions>
               <execution>
@@ -766,6 +655,8 @@
                                 Include class files from every module.
                               -->
                               <include name="**/target/classes/**/*.class"/>
+                              <!-- To avoid warning about class file not matching the jacoco.exec data. -->
+                              <exclude name="**/target/classes/**/it/*/*.class"/>
                             </fileset>
                           </classfiles>
                           <sourcefiles encoding="UTF-8">
@@ -774,6 +665,7 @@
                                 Include source files from every module.
                               -->
                               <include name="**/src/main/**/*.java"/>
+                              <exclude name="**/target/classes/**/it/*/*.java"/>
                             </fileset>
                           </sourcefiles>
                         </group>
@@ -797,7 +689,6 @@
           <plugin>
             <groupId>org.sonarsource.scanner.maven</groupId>
             <artifactId>sonar-maven-plugin</artifactId>
-            <version>3.9.1.2184</version>
             <executions>
               <execution>
                 <goals>
@@ -809,23 +700,6 @@
           </plugin>
         </plugins>
       </build>
-    </profile>
-    <profile>
-      <id>sonarcloud-analysis-pull-request</id>
-      <activation>
-        <property>
-          <name>env.ghprbPullId</name>
-        </property>
-      </activation>
-      <properties>
-        <sonar.pullrequest.provider>GitHub</sonar.pullrequest.provider>
-        <!--suppress UnresolvedMavenProperty -->
-        <sonar.pullrequest.branch>${env.ghprbSourceBranch}</sonar.pullrequest.branch>
-        <!--suppress UnresolvedMavenProperty -->
-        <sonar.pullrequest.key>${env.ghprbPullId}</sonar.pullrequest.key>
-        <!--suppress UnresolvedMavenProperty -->
-        <sonar.pullrequest.base>${env.ghprbTargetBranch}</sonar.pullrequest.base>
-      </properties>
     </profile>
 
     <profile>
@@ -840,35 +714,8 @@
         <revapi.skip>true</revapi.skip>
         <skipTests>true</skipTests>
         <skipITs>true</skipITs>
-        <formatter.skip>true</formatter.skip>
-        <animal.sniffer.skip>true</animal.sniffer.skip>
+        <spotless.skip>true</spotless.skip>
       </properties>
-    </profile>
-
-    <profile>
-      <id>fullProfile</id>
-      <activation>
-        <property>
-          <name>full</name>
-        </property>
-      </activation>
-      <build>
-        <plugins>
-          <plugin> <!-- Make sure the build fails-fast on Javadoc issues. -->
-            <artifactId>maven-javadoc-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>build-javadoc-jar</id>
-                <!-- TODO Workaround switch back to "package" phase after fix https://issues.apache.org/jira/browse/MJAVADOC-747 -->
-                <phase>process-classes</phase>
-                <goals>
-                  <goal>jar</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
     </profile>
   </profiles>
 </project>

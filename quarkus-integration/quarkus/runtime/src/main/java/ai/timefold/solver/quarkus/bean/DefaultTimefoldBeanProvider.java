@@ -18,6 +18,7 @@ import ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecimalScore;
 import ai.timefold.solver.core.api.score.buildin.simplelong.SimpleLongScore;
+import ai.timefold.solver.core.api.score.stream.ConstraintMetaModel;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.SolverManager;
@@ -25,11 +26,18 @@ import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.SolverManagerConfig;
 
 import io.quarkus.arc.DefaultBean;
+import io.quarkus.arc.Lock;
 
+/**
+ * Provider for managed resources of the default solver.
+ */
 @ApplicationScoped
+@Lock(Lock.Type.WRITE)
 public class DefaultTimefoldBeanProvider {
 
     private SolverFactory<?> solverFactory;
+
+    private ConstraintMetaModel constraintMetaModel;
 
     private SolverManager<?, ?> solverManager;
 
@@ -37,14 +45,13 @@ public class DefaultTimefoldBeanProvider {
 
     private ScoreManager<?, ?> scoreManager;
 
+    @SuppressWarnings("unchecked")
     @DefaultBean
     @Dependent
     @Produces
     <Solution_> SolverFactory<Solution_> solverFactory(SolverConfig solverConfig) {
-        synchronized (this) {
-            if (solverFactory == null) {
-                solverFactory = SolverFactory.create(solverConfig);
-            }
+        if (solverFactory == null) {
+            solverFactory = SolverFactory.create(solverConfig);
         }
         return (SolverFactory<Solution_>) solverFactory;
     }
@@ -52,12 +59,22 @@ public class DefaultTimefoldBeanProvider {
     @DefaultBean
     @Dependent
     @Produces
+    ConstraintMetaModel constraintProviderMetaModel(SolverFactory<?> solverFactory) {
+        if (constraintMetaModel == null) {
+            // The metamodel is not compatible with Quarkus code recording, thus we need to rebuild it at runtime.
+            constraintMetaModel = BeanUtil.buildConstraintMetaModel(solverFactory);
+        }
+        return constraintMetaModel;
+    }
+
+    @SuppressWarnings("unchecked")
+    @DefaultBean
+    @Dependent
+    @Produces
     <Solution_, ProblemId_> SolverManager<Solution_, ProblemId_> solverManager(SolverFactory<Solution_> solverFactory,
             SolverManagerConfig solverManagerConfig) {
-        synchronized (this) {
-            if (solverManager == null) {
-                solverManager = SolverManager.create(solverFactory, solverManagerConfig);
-            }
+        if (solverManager == null) {
+            solverManager = SolverManager.create(solverFactory, solverManagerConfig);
         }
         return (SolverManager<Solution_, ProblemId_>) solverManager;
     }
@@ -67,13 +84,12 @@ public class DefaultTimefoldBeanProvider {
     //    @DefaultBean
     //    @Dependent
     //    @Produces
+    @SuppressWarnings("unchecked")
     @Deprecated(forRemoval = true)
-    <Solution_, Score_ extends Score<Score_>> ScoreManager<Solution_, Score_> scoreManager(
-            SolverFactory<Solution_> solverFactory) {
-        synchronized (this) {
-            if (scoreManager == null) {
-                scoreManager = ScoreManager.create(solverFactory);
-            }
+    <Solution_, Score_ extends Score<Score_>> ScoreManager<Solution_, Score_>
+            scoreManager(SolverFactory<Solution_> solverFactory) {
+        if (scoreManager == null) {
+            scoreManager = ScoreManager.create(solverFactory);
         }
         return (ScoreManager<Solution_, Score_>) scoreManager;
     }
@@ -191,12 +207,11 @@ public class DefaultTimefoldBeanProvider {
     //    @DefaultBean
     //    @Dependent
     //    @Produces
+    @SuppressWarnings("unchecked")
     <Solution_, Score_ extends Score<Score_>> SolutionManager<Solution_, Score_> solutionManager(
             SolverFactory<Solution_> solverFactory) {
-        synchronized (this) {
-            if (solutionManager == null) {
-                solutionManager = SolutionManager.create(solverFactory);
-            }
+        if (solutionManager == null) {
+            solutionManager = SolutionManager.create(solverFactory);
         }
         return (SolutionManager<Solution_, Score_>) solutionManager;
     }
